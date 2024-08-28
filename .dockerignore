@@ -1,0 +1,28 @@
+# Ignorar directorios de datos locales
+data/
+
+# Archivos de Python bytecode
+__pycache__/
+*.pyc
+*.pyo
+
+# Ignorar el entorno virtual
+.venv/
+
+# Archivos de configuración local y logs
+.env
+*.log
+
+# Archivos y directorios relacionados con Git
+.git
+.gitignore
+
+# Archivos y carpetas de IDE y editores
+.vscode/
+*.swp
+*.swo
+
+# Archivos específicos que no deben incluirse
+README.md
+Dockerfile
+docker-compose.yml

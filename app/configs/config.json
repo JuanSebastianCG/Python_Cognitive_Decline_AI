@@ -1,0 +1,5 @@
+{
+    "title": "Cognitive API",
+    "version": "1.0",
+    "database_url": "postgresql://user:password@localhost/dbname"
+}

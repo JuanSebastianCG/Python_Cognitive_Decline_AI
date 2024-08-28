@@ -1,0 +1,48 @@
+Cognitive/
+┣ .venv/
+┃ ┣ Include/
+┃ ┃ ┗ site/
+┃ ┃   ┗ python3.12/
+┃ ┃ ┃   ┗ greenlet/
+┃ ┗ Lib/
+┣ .vscode/
+┃ ┗ settings.json
+┣ app/
+┃ ┣ configs/
+┃ ┃ ┗ config.json
+┃ ┣ routers/
+┃ ┃ ┣ endpoints.py
+┃ ┃ ┗ __init__.py
+┃ ┣ .env
+┃ ┣ dependencies.py
+┃ ┣ main.py
+┃ ┗ __init__.py
+┣ data/
+┃ ┣ external/
+┃ ┣ processed/
+┃ ┗ raw/
+┣ docs/
+┃ ┗ comands.txt
+┣ model/
+┃ ┣ notebooks/
+┃ ┃ ┣ EDA.ipynb
+┃ ┃ ┗ ModelTesting.ipynb
+┃ ┣ preprocessing/
+┃ ┃ ┗ __init__.py
+┃ ┣ trained/
+┃ ┣ __pycache__/
+┃ ┃ ┗ pipelines.cpython-312.pyc
+┃ ┣ inferences.py
+┃ ┣ pipelines.py
+┃ ┣ training.py
+┃ ┣ utils.py
+┃ ┗ __init__.py
+┣ test/
+┃ ┣ test_api/
+┃ ┗ test_model/
+┣ .dockerignore
+┣ .gitignore
+┣ docker-compose.yml
+┣ Dockerfile
+┣ README.md
+┗ requirements.txt

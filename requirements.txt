@@ -1,0 +1,16 @@
+fastapi # Para crear la API
+uvicorn # Para correr el servidor
+pandas # Para manipulación de datos
+numpy # Para manipulación de datos
+scikit-learn # Para modelos de machine learning
+matplotlib # Para gráficos
+sqlalchemy  # Si estás usando una base de datos
+pydantic  # Para validación de datos en FastAPI
+pydantic-settings
+tensorflow  # Si decides utilizar redes neuronales
+tensorboardX # Para visualizar los resultados de TensorFlow
+xgboost  # Para modelos de boosting
+pipeline  # Para crear pipelines de scikit-learn
+
+# pip install -r requirements.txt
+#pickle  # Para guardar modelos de scikit-learn 

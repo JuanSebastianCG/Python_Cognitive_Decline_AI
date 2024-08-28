@@ -1,0 +1,45 @@
+
+# Caché de Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Entornos virtuales
+venv/
+
+# Archivos de ambiente
+.env
+
+# Logs
+*.log
+
+# Archivos temporales
+*.tmp
+*.temp
+
+# Directorios y archivos de IDE
+.vscode/
+.idea/
+*.sublime-workspace
+
+#inside the folder data
+data/external/*
+data/processed/*
+data/raw/*
+
+.venv/
+
+docs/comands.txt
+
+
+
+model/Logs/*
+
+# Archivos de sistema
+
+
+
+
+# Archivos específicos que no deben incluirse
+# Dockerfile
+# docker-compose.yml

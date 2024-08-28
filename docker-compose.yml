@@ -1,0 +1,25 @@
+
+# docker-compose up -d  //.docker-compose
+services:
+  app:
+    container_name: app
+    build: .
+    env_file:
+      - .env
+    environment:
+      - ENV=development
+    ports:
+      - ${PORT}:${PORT}
+    volumes:
+      - .:/app
+  tensorboard:
+    image: tensorflow/tensorflow
+    volumes:
+      - ./model/logs/fit:/logs  # Asegura que esta ruta coincide con la ubicación local de los logs
+    command: tensorboard --logdir=/logs --bind_all
+    ports:
+      - "6006:6006"
+
+
+
+
