@@ -1,20 +1,31 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from pipelines import create_pipeline  
-from sklearn.metrics import accuracy_score
 from utils import get_tensorboard_writer
+import pickle
 
-def train_model(data):
+def train_model(file_path):
     writer = get_tensorboard_writer() 
 
-    df = pd.DataFrame(data)
-    X = df.drop('target', axis=1)
-    y = df['target']
-    x_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    # Cargar los datos
+    data = load_data(file_path)
 
+    # Separar características y objetivo
+    X = data.drop(columns=['target'])
+    y = data['target']
+
+    # Balancear los datos
+    X_balanced, y_balanced = balance_data(X, y)
+
+    # Dividir los datos en entrenamiento y prueba
+    X_train, X_test, y_train, y_test = train_test_split(X_balanced, y_balanced, test_size=0.2, random_state=42)
+
+    # Crear el pipeline
     pipeline = create_pipeline()
-    pipeline.fit(x_train, y_train)
-    y_pred = pipeline.predict(x_test)
+
+    # Entrenar el modelo
+    pipeline.fit(X_train, y_train)
+    y_pred = pipeline.predict(X_test)
 
     # Calcular y registrar la precisión
     accuracy = accuracy_score(y_test, y_pred)
@@ -22,12 +33,13 @@ def train_model(data):
     writer.close()
 
     print("Model accuracy:", accuracy)
+
+    # Guardar el modelo en un archivo pickle
+    with open('trained_model.pkl', 'wb') as model_file:
+        pickle.dump(pipeline, model_file)
+
     return pipeline
 
 if __name__ == "__main__":
-    data = {
-        'feature1': [1, 2, 3, 4, 5],
-        'feature2': [5, 4, 3, 2, 1],
-        'target': [0, 1, 0, 1, 0]
-    }
-    trained_model = train_model(data)
+    file_path = r"C:\Users\juans\OneDrive\Documentos\iaProyect\Cognitive\data\raw\BD sin RM(Base de datos).csv"
+    trained_model = train_model(file_path)

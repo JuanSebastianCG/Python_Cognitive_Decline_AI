@@ -1,14 +1,16 @@
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
-from sklearn.impute import SimpleImputer
 from sklearn.ensemble import RandomForestClassifier
+from preprocessing.data_cleaning import clean_data, balance_data
+from preprocessing.data_extraction import load_data
 
 def create_pipeline():
-    # Definir los pasos del pipeline
+    """
+    Crea un pipeline de preprocesamiento y modelo.
+    """
     steps = [
-        ('imputer', SimpleImputer(strategy='median')),
-        ('scaler', StandardScaler()),
-        ('classifier', RandomForestClassifier())
+        ('data_cleaning', clean_data),
+        ('model', RandomForestClassifier(random_state=42))
     ]
+    
     pipeline = Pipeline(steps=steps)
     return pipeline

@@ -1,4 +1,4 @@
-```markdown
+
 # Cognitive Decline Prediction Model
 
 ## Tabla de Contenidos
@@ -56,7 +56,7 @@ source venv/bin/activate
 
 # Instala las dependencias
 pip install -r requirements.txt
-```
+
 
 ## Configuración del Entorno
 
@@ -95,12 +95,9 @@ PORT=
 docker-compose up
 ```
 
-```bash
 
 ### Uso del API
 Una vez el servidor esté funcionando, puedes interactuar con el modelo a través de la API generada por FastAPI, accediendo a la documentación interactiva en `http://localhost:8000/docs`.
-
-
 
 ## Licencia
 
@@ -111,4 +108,3 @@ Una vez el servidor esté funcionando, puedes interactuar con el modelo a travé
 - A todos los colaboradores y mentores que han participado en este proyecto.
 - A la Universidad Autónoma de Manizales por el soporte y los recursos proporcionados.
 
-```

@@ -1,19 +1,149 @@
+
+Plan de acción para preparación de datos y Generación de modelo predictivo de deterioro cognitivo con microservicios
+
+Desafío Técnico:
+ El reto consiste en diseñar y afinar un modelo de aprendizaje automático que no solo sea robusto en términos de precisión diagnóstica, sino también eficiente en el manejo y procesamiento de un volumen significativo de datos multidimensionales. La meta es transformar estos datos en insights accionables que permitan una intervención temprana y personalizada para cada paciente, por medio de microservicios para su uso posterior.
+
+Plan de Acción para Preparación de datos y Generación de modelo con Microservicios
+
+Para estructurar adecuadamente el plan de acción y seguimiento para el desarrollo del modelo de aprendizaje automático destinado a predecir el deterioro cognitivo en adultos mayores, podemos organizar el proceso en fases detalladas que abarcan desde la preparación de datos hasta la validación y despliegue del modelo. A continuación se muestra un plan estructurado y completo:
+
+1. Preparación y Análisis de Datos
+
+Limpieza de Datos
+Corrección de errores de digitación: verificación de la consistencia de los datos y tratamiento de valores faltantes, por medio de análisis estadísticos (considerar usar librería  DataPrep).
+Balanceo de datos: verificar si las clases están bien distribuidas y no hay sesgos por medio de métodos estadísticos considerar la técnica SMOTE o Bootstrap Resampling en casos posteriores.
+Estandarización: Utilizar StandardScaler para todos los datos numéricos para manejar mejor las diferencias de escala (normalización de textos ,  Min-Max Scaling, Z-score normalization).
+Codificación de Categorías: Implementar Target Encoding para variables categóricas, lo que puede mejorar la predicción en datos con muchas categorías (considerar PolynomialFeatures para capturar relaciones complejas entre variables).
+Imputación de Valores Faltantes: Aplicar K-NN imputation para una imputación más precisa basada en la similitud de los vecinos.
+Detección de Outliers: Isolation Forest para identificar y tratar valores atípicos.
+
+Características a Considerar
+Características a considerar: Edad, género, escolaridad, estado civil, convivencia con pareja, estrato socioeconómico, antecedentes familiares, autopercepción de la salud, resultados de pruebas neuropsicológicas y medicaciones para condiciones crónicas.
+Características a descartar: Datos demográficos no influentes (como lugar de nacimiento), grupo sanguíneo, detalles menores del hogar, y antecedentes menos relevantes como menarca y menopausia.
+
+2. Desarrollo del Modelo
+
+Selección Automática de Características
+Filtrado (considerar)
+Prueba Chi-Cuadrado: Aplicar la prueba de chi-cuadrado (sklearn.feature_selection.chi2) para seleccionar características categóricas relevantes.
+Correlación de Spearman: Emplear correlación de Spearman (scipy.stats.spearmanr) para identificar relaciones no lineales entre características numéricas.
+Análisis de Componentes Principales (PCA): Utilizar PCA desde sklearn.decomposition para reducir la dimensionalidad manteniendo la mayor varianza posible.
+
+Métodos de Envoltura (Wrapper)
+Eliminación Recursiva de Características (RFE): Implementar RFE con un modelo base como RandomForestClassifier para seleccionar características que mejoran la predicción.
+Sequential Feature Selector: Utilizar SequentialFeatureSelector de sklearn para un enfoque más iterativo en la selección de características.
+
+Métodos Embebidos (Embedded Methods) 
+Lasso (L1 Regularization): Usar Lasso desde sklearn.linear_model para penalizar y eliminar características menos importantes durante el entrenamiento del modelo.
+Random Forest Feature Importance: Evaluar la importancia de características directamente desde un RandomForestClassifier y seleccionar solo las más relevantes.
+
+Construcción del Modelo
+Modelos Opcionales de Base
+Random Forest: Comenzar con RandomForestClassifier como modelo base por su robustez y capacidad de manejar datos no lineales y de alta dimensionalidad.
+Gradient Boosting Machines (GBM): Implementar XGBoost (xgboost.XGBClassifier) por su capacidad de ajustar modelos más complejos y ofrecer una mejora incremental sobre RandomForest.
+Redes Neuronales Artificiales (ANN): Utilizar Keras o TensorFlow para construir una red neuronal con capas densas, enfocada en capturar relaciones no lineales complejas.
+
+Modelos Híbridos
+Stacking: Implementar un modelo de stacking utilizando sklearn.ensemble.StackingClassifier, combinando RandomForest, XGBoost, y una red neuronal para crear un meta-modelo que mejore la predicción final.
+
+Optimización de Hiperparámetros
+Optimización Bayesiana: Implementar BayesianOptimization para una búsqueda de hiperparámetros más inteligente y eficiente en tiempo.
+
+
+3. Validación del Modelo
+
+Técnicas de Validación
+Validación Cruzada
+Validación Cruzada Estratificada (Stratified K-Fold): usar StratifiedKFold de sklearn.model_selection. asegura que cada fold de los datos de entrenamiento y prueba tenga la misma proporción de clases que el conjunto de datos original, lo cual es crucial en problemas de clasificación desbalanceada como el tuyo. Esto ayuda a mantener la representatividad de las clases y mejora la fiabilidad de la validación.
+Validación Cruzada Anidada (Nested Cross-Validation):  Implementar con cross_val_score y GridSearchCV en sklearn. Permite seleccionar características y validar el modelo simultáneamente, lo cual minimiza el riesgo de sobreajuste y optimiza tanto la selección de hiperparámetros como el rendimiento general del modelo
+
+Bootstrap Resampling:
+ bootstrap de scipy.stats o implementaciones personalizadas en Python. Este método permite estimar la precisión y la incertidumbre del modelo mediante la generación de múltiples subconjuntos de datos con reemplazo. Es especialmente útil para validar la estabilidad del modelo y obtener intervalos de confianza para las métricas de rendimiento.
+
+Evaluación de Métricas
+Métricas Clásicas de Clasificación
+Precisión, Sensibilidad, Especificidad:  classification_report de sklearn.metrics.: Estas métricas proporcionan una visión integral del rendimiento del modelo. La precisión mide el porcentaje de predicciones correctas, la sensibilidad evalúa la capacidad del modelo para identificar verdaderos positivos, y la especificidad mide la capacidad de detectar verdaderos negativos.
+Curva ROC y AUC (Área Bajo la Curva):  roc_curve y auc de sklearn.metrics. La curva ROC y el AUC son esenciales para entender la capacidad del modelo para diferenciar entre clases, especialmente en conjuntos de datos desbalanceados. Un AUC cercano a 1 indica un modelo excelente en discriminación.
+
+Métricas Avanzadas
+Curvas PR (Precisión-Recall):  precision_recall_curve de sklearn.metrics. En problemas donde las clases están desbalanceadas, la curva PR puede proporcionar una visión más precisa del rendimiento del modelo en la identificación de la clase minoritaria.
+F1-Score:  f1_score de sklearn.metrics. Combina precisión y sensibilidad en una única métrica. Es particularmente útil cuando es necesario un equilibrio entre estas dos métricas.
+
+4. Optimización del Modelo
+
+Optimización de Hiperparámetros
+Optimización Bayesiana:  BayesianOptimization en Python. A diferencia de Grid Search, la optimización bayesiana es más eficiente en términos de tiempo y recursos, ya que construye un modelo probabilístico del espacio de hiperparámetros y se enfoca en las áreas más prometedoras.
+
+Regularización
+Penalización L2 (Ridge Regularization):  RidgeClassifier de sklearn.linear_model.  Añadir regularización L2 ayuda a prevenir el sobreajuste penalizando la magnitud de los coeficientes del modelo, mejorando así la generalización.
+Lasso (L1 Regularization): Usar Lasso desde sklearn.linear_model para penalizar y eliminar características menos importantes durante el entrenamiento del modelo.
+
+Calibración del Modelo
+Calibrated Classifier CV:  CalibratedClassifierCV de sklearn.calibration. Calibrar el modelo mejora la probabilidad predictiva, asegurando que las predicciones probabilísticas sean más precisas, lo cual es crucial en contextos donde la decisión se basa en una interpretación directa de estas probabilidades.
+
+5. Monitoreo del Modelo
+
+Monitoreo de Desempeño
+Dashboards en Tiempo Real:  TensorBoard para rastrear métricas y rendimiento en tiempo real. Estos dashboards permiten un monitoreo continuo del modelo en producción, detectando posibles problemas como la deriva de datos o el deterioro del rendimiento.
+
+Reentrenamiento Automático
+Pipelines de Reentrenamiento:  scikit-learn Pipelines para automatizar el reentrenamiento basado en el rendimiento del modelo en nuevos datos. Asegura que el modelo permanezca actualizado y continúe proporcionando predicciones precisas en un entorno dinámico.
+
+
+6. Implementación del Modelo en Microservicios
+Para la implementación del modelo de aprendizaje automático en un entorno de producción usando Python y VSC como IDE, en donde se usarán las siguientes herramientas:
+
+1. Entorno de Desarrollo
+Visual Studio Code (VSC):  VSC es un IDE versátil y ligero, ideal para la creación de entornos de desarrollo Python. Su amplia gama de extensiones facilita la integración con herramientas de desarrollo, pruebas y despliegue.
+
+2. Creación del Entorno Python
+virtualenv: Estas herramientas te permitirán gestionar dependencias y entornos virtuales de manera aislada. Poetry es especialmente recomendable por su capacidad de manejar tanto dependencias como la configuración del proyecto en un solo archivo (pyproject.toml).
+
+
+3. Implementación como Microservicios
+Framework de Microservicios
+FastAPI: Es un framework ligero, rápido y moderno que facilita la creación de APIs RESTful. Además, su integración con Pydantic permite una validación de datos sencilla y eficiente, ideal para desplegar modelos de machine learning como microservicios.
+
+Contenedorización
+Docker: permite empaquetar tu aplicación y sus dependencias en un contenedor, asegurando que funcionará en cualquier entorno. Facilita el despliegue en producción y el escalado.
+
+Gestión de Configuración
+dotenv: Para manejar variables de entorno de manera segura y flexible. dotenv te permite cargar variables desde un archivo .env, lo cual es útil para configurar tu aplicación sin exponer credenciales o detalles de configuración sensibles en el código.
+
+Seguridad
+
+Resumen del Diseño de Despliegue
+
+Desarrollo en VSC: Configura y gestiona tu entorno de desarrollo en VSC, utilizando extensiones para Python, Docker, y Git.
+Microservicios con FastAPI: Desarrolla APIs RESTful ligeras para desplegar tu modelo de machine learning.
+Contenedorización con Docker: Empaqueta y despliega tu aplicación en contenedores Docker.
+Monitorización y Seguridad:
+
+
 Cognitive/
 ┣ .venv/
 ┃ ┣ Include/
 ┃ ┃ ┗ site/
 ┃ ┃   ┗ python3.12/
 ┃ ┃ ┃   ┗ greenlet/
-┃ ┗ Lib/
+┃ ┣ Lib/
+┃ ┗ pyvenv.cfg
 ┣ .vscode/
 ┃ ┗ settings.json
 ┣ app/
 ┃ ┣ configs/
 ┃ ┃ ┗ config.json
 ┃ ┣ routers/
+┃ ┃ ┣ __pycache__/
+┃ ┃ ┃ ┣ endpoints.cpython-39.pyc
+┃ ┃ ┃ ┗ __init__.cpython-39.pyc
 ┃ ┃ ┣ endpoints.py
 ┃ ┃ ┗ __init__.py
-┃ ┣ .env
+┃ ┣ __pycache__/
+┃ ┃ ┣ dependencies.cpython-39.pyc
+┃ ┃ ┣ main.cpython-39.pyc
+┃ ┃ ┗ __init__.cpython-39.pyc
 ┃ ┣ dependencies.py
 ┃ ┣ main.py
 ┃ ┗ __init__.py
@@ -21,17 +151,31 @@ Cognitive/
 ┃ ┣ external/
 ┃ ┣ processed/
 ┃ ┗ raw/
+┃   ┣ BD sin RM(Base de datos).csv
+┃   ┗ BD sin RM(Diccionario).csv
 ┣ docs/
-┃ ┗ comands.txt
+┃ ┣ comands.txt
+┃ ┗ structure.txt
 ┣ model/
+┃ ┣ logs/
+┃ ┃ ┗ fit/
+┃ ┃   ┣ events.out.tfevents.1724860044.juanc
+┃ ┃   ┣ events.out.tfevents.1724861046.juanc
+┃ ┃   ┣ events.out.tfevents.1724861622.juanc
+┃ ┃   ┣ events.out.tfevents.1724861637.juanc
+┃ ┃   ┗ events.out.tfevents.1724861722.juanc
 ┃ ┣ notebooks/
 ┃ ┃ ┣ EDA.ipynb
 ┃ ┃ ┗ ModelTesting.ipynb
 ┃ ┣ preprocessing/
+┃ ┃ ┣ data_cleaning.py
+┃ ┃ ┣ data_extraction.py
+┃ ┃ ┣ feature_extraction.py
 ┃ ┃ ┗ __init__.py
 ┃ ┣ trained/
 ┃ ┣ __pycache__/
-┃ ┃ ┗ pipelines.cpython-312.pyc
+┃ ┃ ┣ pipelines.cpython-312.pyc
+┃ ┃ ┗ utils.cpython-312.pyc
 ┃ ┣ inferences.py
 ┃ ┣ pipelines.py
 ┃ ┣ training.py
@@ -41,8 +185,14 @@ Cognitive/
 ┃ ┣ test_api/
 ┃ ┗ test_model/
 ┣ .dockerignore
+┣ .env
 ┣ .gitignore
 ┣ docker-compose.yml
 ┣ Dockerfile
 ┣ README.md
 ┗ requirements.txt
+
+
+
+
+

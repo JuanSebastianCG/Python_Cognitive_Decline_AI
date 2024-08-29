@@ -1,0 +1,97 @@
+ `Extraccion de datos.py` 
+
+### 1. **Balanceo de Datos con SMOTE**:
+   - **Cómo se hace**: SMOTE (Synthetic Minority Over-sampling Technique) genera nuevas muestras sintéticas de la clase minoritaria para balancear el dataset. Se aplica después de dividir los datos en características (`X`) y etiquetas (`y`).
+   - **Ejemplo**: `X_balanced, y_balanced = SMOTE().fit_resample(X, y)`.
+   - **Descarga**: Puedes descargar e implementar SMOTE usando `pip install imbalanced-learn`.
+
+### 2. **Estandarización de Características con StandardScaler**:
+   - **Cómo se hace**: Se transforman las características numéricas para que tengan media 0 y desviación estándar 1. Es útil cuando las características tienen escalas diferentes.
+   - **Ejemplo**: `X_scaled = StandardScaler().fit_transform(X)`.
+   - **Descarga**: `pip install scikit-learn`.
+
+### 3. **Imputación de Valores Faltantes con KNNImputer**:
+   - **Cómo se hace**: KNNImputer imputa los valores faltantes utilizando la media de los k vecinos más cercanos. Se aplica a columnas con valores faltantes.
+   - **Ejemplo**: `X_imputed = KNNImputer().fit_transform(X)`.
+   - **Descarga**: `pip install scikit-learn`.
+
+### 4. **Detección de Outliers con Isolation Forest**:
+   - **Cómo se hace**: Isolation Forest identifica y clasifica outliers entrenando un modelo que aísla los puntos en el dataset. Los valores atípicos se identifican con un valor de -1.
+   - **Ejemplo**: `y_outliers = IsolationForest().fit_predict(X)`.
+   - **Descarga**: `pip install scikit-learn`.
+
+### 5. **Normalización de Características con Min-Max Scaling**:
+   - **Cómo se hace**: Normaliza los datos para que estén en un rango específico, como 0 a 1. Es útil para métodos que no son robustos a diferencias de escala.
+   - **Ejemplo**: `X_normalized = (X - X.min()) / (X.max() - X.min())`.
+   - **Descarga**: No requiere librería adicional.
+
+### 6. **Codificación de Categorías con TargetEncoder y OneHotEncoder**:
+   - **Cómo se hace**: `TargetEncoder` convierte categorías en números basados en la relación con la variable objetivo, mientras que `OneHotEncoder` convierte categorías en columnas binarias.
+   - **Ejemplo**: `df_encoded = TargetEncoder().fit_transform(df, df['target'])`.
+   - **Descarga**: `pip install category_encoders`.
+
+### 7. **Generación de Características Polinomiales con PolynomialFeatures**:
+   - **Cómo se hace**: Genera nuevas características combinando las existentes al elevarlas a un exponente especificado. Es útil para capturar interacciones no lineales.
+   - **Ejemplo**: `X_poly = PolynomialFeatures(degree=2).fit_transform(X)`.
+   - **Descarga**: `pip install scikit-learn`.
+
+### 8. **Reducción de Dimensionalidad con PCA**:
+   - **Cómo se hace**: PCA reduce la cantidad de características manteniendo la mayor varianza posible. Es útil para reducir ruido y sobreajuste.
+   - **Ejemplo**: `X_reduced = PCA(n_components=2).fit_transform(X)`.
+   - **Descarga**: `pip install scikit-learn`.
+
+
+
+
+ `feature_extraction.py` 
+
+### 1. **select_features_chi2**
+   - **Cómo se hace**: 
+     - La prueba de Chi-Cuadrado evalúa la independencia entre las características categóricas y la variable objetivo. Se utiliza `SelectKBest` para seleccionar las `k` mejores características basadas en sus valores de Chi-Cuadrado.
+     - El proceso involucra calcular un puntaje para cada característica en relación con la variable objetivo y seleccionar las mejores.
+   - **Para qué sirve**: 
+     - Es útil cuando se tiene un conjunto de características categóricas y se desea seleccionar aquellas que están más fuertemente asociadas con la variable objetivo.
+
+### 2. **select_features_spearman**
+   - **Cómo se hace**:
+     - Se calcula la correlación de Spearman entre cada característica numérica y la variable objetivo. Esta correlación mide relaciones monótonas, no necesariamente lineales.
+     - Las características con una correlación absoluta mayor que un umbral predefinido se seleccionan.
+   - **Para qué sirve**: 
+     - Es útil para identificar características numéricas que están fuertemente correlacionadas con la variable objetivo, incluso si la relación no es lineal.
+
+### 3. **pca_dimensionality_reduction**
+   - **Cómo se hace**:
+     - El Análisis de Componentes Principales (PCA) transforma el conjunto de datos original en un nuevo espacio de menor dimensionalidad, donde cada componente principal captura la mayor varianza posible.
+     - El número de componentes principales a retener (`n_components`) es un parámetro que se ajusta según la necesidad.
+   - **Para qué sirve**: 
+     - PCA se utiliza para reducir la dimensionalidad de los datos, lo que puede ayudar a eliminar el ruido y mejorar la eficiencia del modelo, especialmente en datasets con muchas características.
+
+### 4. **rfe_feature_selection**
+   - **Cómo se hace**:
+     - La Eliminación Recursiva de Características (RFE) selecciona características entrenando un modelo (en este caso, un Random Forest) y eliminando iterativamente las características menos importantes hasta que se retienen `n_features_to_select`.
+   - **Para qué sirve**: 
+     - RFE es útil cuando se desea una selección de características basada en la importancia de cada una en la predicción, y se quiere reducir el número de características sin perder precisión.
+
+### 5. **sequential_feature_selection**
+   - **Cómo se hace**:
+     - Este método selecciona características de manera secuencial, ya sea añadiendo una característica a la vez (`forward`) o eliminando una a la vez (`backward`), basándose en un modelo predictivo (como un Random Forest).
+     - Se detiene cuando se selecciona el número deseado de características (`n_features_to_select`).
+   - **Para qué sirve**: 
+     - Es útil cuando se busca un proceso iterativo de selección de características que optimice el conjunto seleccionado en función del rendimiento del modelo.
+
+### 6. **lasso_feature_selection**
+   - **Cómo se hace**:
+     - Lasso (Least Absolute Shrinkage and Selection Operator) aplica una regularización L1 al modelo lineal, lo que fuerza a que los coeficientes de algunas características sean exactamente cero. Así, solo las características más importantes permanecen.
+     - El parámetro `alpha` controla la fuerza de la regularización.
+   - **Para qué sirve**: 
+     - Es ideal para la selección de características en datasets con muchas variables, ya que puede eliminar las características menos importantes automáticamente durante el entrenamiento.
+
+### 7. **random_forest_feature_importance**
+   - **Cómo se hace**:
+     - Un modelo de Random Forest se entrena con el conjunto de datos, y la importancia de cada característica se mide en función de su impacto en la predicción.
+     - Se seleccionan las `n_features` características más importantes según estas medidas.
+   - **Para qué sirve**: 
+     - Es útil para entender cuáles son las características más relevantes en un modelo de Random Forest, lo que puede ser crucial para la interpretación y simplificación del modelo.
+
+### Resumen:
+Cada uno de estos métodos tiene el objetivo de reducir el número de características en tu dataset, conservando solo aquellas que son más útiles para predecir la variable objetivo. Esto ayuda a mejorar el rendimiento del modelo, reducir el riesgo de sobreajuste, y hacer que el modelo sea más interpretable y eficiente.
