@@ -1,189 +1,189 @@
-# ./model/preprocessing/data_cleaning.py
+import pandas as pd
+import numpy as np
 from sklearn.impute import KNNImputer
-from sklearn.preprocessing import StandardScaler, LabelEncoder, PolynomialFeatures
+from sklearn.preprocessing import StandardScaler, PolynomialFeatures, MinMaxScaler
 from imblearn.over_sampling import SMOTE
 from sklearn.ensemble import IsolationForest
 from category_encoders import TargetEncoder, OneHotEncoder
 from sklearn.decomposition import PCA
-from statsmodels.stats.outliers_influence import variance_inflation_factor
-import pandas as pd
 
-def balance_data(X, y):
-    """
-    Balancea las clases en el conjunto de datos utilizando la técnica SMOTE.
+class DataCleaner:
+    def __init__(self, X, y):     
+        """
+        Inicializa la clase DataCleaner, que se encarga de realizar diversas tareas de 
+        limpieza y preprocesamiento de datos, incluyendo la imputación de valores faltantes, 
+        balanceo de clases, eliminación de outliers, y codificación de características.
+
+        Parámetros:
+        X (DataFrame): Las características de entrada.
+        y (Series or array-like): La variable objetivo.
+        """
+        self.X = X
+        self.y = y
+        self.imputer = KNNImputer()
+        self.scaler = StandardScaler()
+        self.smote = SMOTE(random_state=42)
+        self.detector = IsolationForest(random_state=42)
+        self.pca = PCA()
+        self.min_max_scaler = MinMaxScaler()
+        self.poly = PolynomialFeatures(degree=2)
+        self.encoders = {
+            'target': TargetEncoder(),
+            'onehot': OneHotEncoder()
+        }
+        
+        
+    def delete_duplicate_rows(self):
+        """
+        Elimina filas duplicadas en el DataFrame X, asegurando que la variable objetivo y
+        las características queden sincronizadas.
+
+        Returns:
+        tuple: El DataFrame de características X sin duplicados y la variable objetivo y correspondiente.
+        """
+        self.X.drop_duplicates(inplace=True)
+        self.y = self.y[self.X.index]
+        return self.X, self.y
     
-    Parámetros:
-    X (pd.DataFrame o np.array): Conjunto de características.
-    y (pd.Series o np.array): Etiquetas correspondientes a las clases.
+    def delete_null_data(self):
+        """
+        Elimina filas con valores nulos en el DataFrame X, sincronizando también la variable objetivo y.
 
-    Retorna:
-    X_balanced (pd.DataFrame o np.array): Conjunto de características balanceado.
-    y_balanced (pd.Series o np.array): Etiquetas balanceadas.
-    """
-    smote = SMOTE(random_state=42)
-    X_balanced, y_balanced = smote.fit_resample(X, y)
-    return X_balanced, y_balanced
-
-def standardize(X):
-    """
-    Estandariza las características numéricas utilizando StandardScaler.
+        Returns:
+        tuple: El DataFrame de características X sin valores nulos y la variable objetivo y correspondiente.
+        """
+        self.X.dropna(inplace=True)
+        self.y = self.y[self.X.index]
+        return self.X, self.y
     
-    Parámetros:
-    X (pd.DataFrame o np.array): Conjunto de características numéricas.
+    def delete_Object_columns(self):
+        """
+        Elimina columnas de tipo objeto del DataFrame X, dejando solo columnas numéricas o de otro tipo.
 
-    Retorna:
-    X_scaled (np.array): Conjunto de características estandarizado.
-    """
-    scaler = StandardScaler()
-    X_scaled = scaler.fit_transform(X)
-    return X_scaled
+        Returns:
+        DataFrame: El DataFrame X sin columnas de tipo objeto.
+        """
+        self.X = self.X.select_dtypes(exclude=['object'])
+        return self.X
+        
+    def balance_data(self):
+        """
+        Balancea el conjunto de datos usando la técnica de sobremuestreo SMOTE para manejar el desbalanceo de clases.
+        Smote basicamente toma los datos de la clase minoritaria y genera datos sintéticos para igualar la cantidad de datos de la clase mayoritaria.
+        los datos sinteticos se generan con la técnica de interpolación de K-vecinos más cercanos.
 
-def impute_missing_values(X,ignore_columns):
-    """
-    Imputa los valores faltantes en el conjunto de datos utilizando KNNImputer.
-    this function is used to fill the missing values in the dataset using the KNNImputer method.
-    Parameters:
-    X (pd.DataFrame or np.array): Dataset with missing values.
-    Returns:
-    X_imputed (pd.DataFrame or np.array): Dataset with missing values filled.
-    """
-    X = X.drop(columns=ignore_columns)
-    imputer = KNNImputer()
-    X_imputed = imputer.fit_transform(X)
-    return X_imputed
+        Returns:
+        tuple: El DataFrame de características balanceadas X y la variable objetivo balanceada y.
+        """
+        X_balanced, y_balanced = self.smote.fit_resample(self.X, self.y)
+        self.X = X_balanced
+        self.y = y_balanced
+        return X_balanced, y_balanced
 
-def outlier_detection(X):
-    """
-    Detecta valores atípicos en el conjunto de datos utilizando Isolation Forest.
+    def standardize(self, ignore_columns=[]):
+        """
+        Estandariza las características numéricas del DataFrame X, ignorando aquellas que se especifiquen.
+        formula de estandarización: (X - mean(X)) / std(X)
+
+        Parámetros:
+        ignore_columns (list): Lista de columnas a excluir de la estandarización.
+
+        Returns:
+        DataFrame: El DataFrame X con las columnas numéricas estandarizadas.
+        """
+        columns_to_standardize = self.X.select_dtypes(include=[np.number]).columns.difference(ignore_columns)
+        self.X.loc[:, columns_to_standardize] = self.scaler.fit_transform(self.X[columns_to_standardize])
+        return self.X
+
+    def impute_missing_values(self):
+        """
+        Imputa valores faltantes en el DataFrame X utilizando la técnica de K-Nearest Neighbors (KNN).
+        los valores faltantes se reemplazan por la media de los k vecinos más cercanos.
+
+        Returns:
+        DataFrame: El DataFrame X con los valores faltantes imputados.
+        """
+        self.X[:] = self.imputer.fit_transform(self.X)
+        return self.X
+
+    def delete_outliers(self, delete_indices=True):
+        """
+        Detecta y opcionalmente elimina outliers en el DataFrame X utilizando Isolation Forest.
+
+        Parámetros:
+        delete_indices (bool): Si es True, elimina las filas que son outliers. Si es False, 
+                               solo devuelve un DataFrame con la marca de outliers.
+
+        Returns:
+        DataFrame: Un DataFrame con un indicador de si una fila es un outlier o no.
+        """
+        indices = self.detector.fit_predict(self.X)
+        if delete_indices:
+            self.X = self.X[indices == 1]
+            self.y = self.y[indices == 1]
+        return pd.DataFrame(indices, columns=['outlier'])
+
+    def normalize_features(self, ignore_columns=[]):
+        """
+        Normaliza las características numéricas del DataFrame X utilizando Min-Max Scaling, 
+        ignorando aquellas que se especifiquen.
+
+        Parámetros:
+        ignore_columns (list): Lista de columnas a excluir de la normalización.
+
+        Returns:
+        DataFrame: El DataFrame X con las columnas numéricas normalizadas.
+        """
+        columns_to_normalize = self.X.select_dtypes(include=[np.number]).columns.difference(ignore_columns)
+        self.X.loc[:, columns_to_normalize] = self.min_max_scaler.fit_transform(self.X[columns_to_normalize])
+        return self.X
     
-    Parámetros:
-    X (pd.DataFrame o np.array): Conjunto de características a evaluar.
+    def encode_features(self, target_column, method='target'):
+        """
+        Codifica las características categóricas del DataFrame X utilizando la técnica 
+        especificada ('target' o 'onehot').
 
-    Retorna:
-    y_outliers (np.array): Array indicando los valores atípicos (-1 para outliers, 1 para inliers).
-    """
-    detector = IsolationForest(random_state=42)
-    y_outliers = detector.fit_predict(X)
-    return y_outliers
+        Parámetros:
+        target_column (str): El nombre de la columna objetivo para Target Encoding.
+        method (str): Método de codificación ('target' para Target Encoding, 'onehot' para One-Hot Encoding).
 
-def feature_normalization(X, min_max_values):
-    """
-    Normaliza las características numéricas utilizando Min-Max Scaling.
-    
-    Parámetros:
-    X (pd.DataFrame o np.array): Conjunto de características numéricas.
-    min_max_values (dict): Diccionario con los valores mínimos y máximos para la normalización.
+        Returns:
+        DataFrame: El DataFrame X con las características categóricas codificadas.
+        """
+        encoder = self.encoders[method]
+        self.X = encoder.fit_transform(self.X, self.y if method == 'target' else None)
+        return self.X
 
-    Retorna:
-    X_normalized (pd.DataFrame o np.array): Conjunto de características normalizado.
-    """
-    X_normalized = (X - min_max_values['min']) / (min_max_values['max'] - min_max_values['min'])
-    return X_normalized
+    def generate_polynomial_columns(self, replace_Db=False):
+        """
+        Genera nuevas características polinómicas basadas en las existentes en el DataFrame X.
 
-def encode_categorical_features(df, target_column, encoding_type='target'):
-    """
-    Codifica las características categóricas del conjunto de datos utilizando el método especificado.
-    
-    Parámetros:
-    df (pd.DataFrame): DataFrame que contiene las características a codificar.
-    target_column (str): Nombre de la columna objetivo para Target Encoding.
-    encoding_type (str): Tipo de codificación ('target' para Target Encoding o 'onehot' para One-Hot Encoding).
+        Parámetros:
+        replace_Db (bool): Si es True, reemplaza las características originales por las nuevas características polinómicas.
 
-    Retorna:
-    df_encoded (pd.DataFrame): DataFrame con las características categóricas codificadas y numéricas estandarizadas.
-    """
-    if encoding_type == 'target':
-        encoder = TargetEncoder(cols=df.select_dtypes(include=['object']).columns)
-    elif encoding_type == 'onehot':
-        encoder = OneHotEncoder(cols=df.select_dtypes(include=['object']).columns)
-    
-    df_encoded = encoder.fit_transform(df, df[target_column])
-    
-    # Estandarización de características numéricas
-    scaler = StandardScaler()
-    df_encoded[df_encoded.select_dtypes(include=['float64', 'int64']).columns] = scaler.fit_transform(df_encoded.select_dtypes(include=['float64', 'int64']).columns)
-    
-    return df_encoded
+        Returns:
+        DataFrame: Un nuevo DataFrame con las características polinómicas generadas.
+        """
+        new_features = self.poly.fit_transform(self.X)
+        new_features = pd.DataFrame(new_features, columns=self.poly.get_feature_names_out(self.X.columns))
+        if replace_Db:
+            self.X = new_features
+        return new_features
 
-def create_normalization_array(df):
-    """
-    Crea un array con los valores mínimos y máximos de cada característica en el DataFrame.
-    
-    Parámetros:
-    df (pd.DataFrame): DataFrame que contiene las características numéricas.
+    def reduce_dimensionality(self, n_components=2, replace=False):
+        """
+        Reduce la dimensionalidad de las características en el DataFrame X utilizando PCA (Análisis de Componentes Principales).
 
-    Retorna:
-    normalization_array (dict): Diccionario con los valores mínimos y máximos de cada característica.
-    """
-    normalization_array = {
-        'min': df.min(axis=0),
-        'max': df.max(axis=0)
-    }
-    return normalization_array
+        Parámetros:
+        n_components (int): El número de componentes principales a retener.
+        replace (bool): Si es True, reemplaza las características originales por los componentes principales.
 
-def remove_duplicates(df):
-    """
-    Elimina los duplicados en el DataFrame.
-    
-    Parámetros:
-    df (pd.DataFrame): DataFrame que contiene los datos a limpiar.
-
-    Retorna:
-    df_deduped (pd.DataFrame): DataFrame sin duplicados.
-    """
-    df_deduped = df.drop_duplicates()
-    return df_deduped
-
-def check_data_consistency(df):
-    """
-    Verifica la consistencia de los datos en el DataFrame.
-    
-    Parámetros:
-    df (pd.DataFrame): DataFrame que contiene los datos a verificar.
-
-    Retorna:
-    inconsistent_data (dict): Diccionario con estadísticas básicas y valores únicos para cada columna.
-    """
-    inconsistent_data = {}
-    for column in df.columns:
-        if df[column].dtype == 'object':
-            inconsistent_data[column] = df[column].unique()
-        elif df[column].dtype in ['int64', 'float64']:
-            inconsistent_data[column] = {
-                'min': df[column].min(),
-                'max': df[column].max(),
-                'mean': df[column].mean()
-            }
-    return inconsistent_data
-
-def generate_polynomial_features(X, degree=2):
-    """
-    Genera características polinomiales a partir de las características originales.
-    
-    Parámetros:
-    X (pd.DataFrame o np.array): Conjunto de características originales.
-    degree (int): Grado del polinomio a generar.
-
-    Retorna:
-    X_poly (np.array): Conjunto de características polinomiales.
-    """
-    poly = PolynomialFeatures(degree)
-    X_poly = poly.fit_transform(X)
-    return X_poly
-
-def reduce_dimensionality(X, n_components=2):
-    """
-    Reduce la dimensionalidad del conjunto de datos utilizando PCA.
-    
-    Parámetros:
-    X (pd.DataFrame o np.array): Conjunto de características a reducir.
-    n_components (int): Número de componentes principales a retener.
-
-    Retorna:
-    X_reduced (np.array): Conjunto de características con dimensionalidad reducida.
-    """
-    pca = PCA(n_components=n_components)
-    X_reduced = pca.fit_transform(X)
-    return X_reduced
-
-
+        Returns:
+        array: Un array con los componentes principales obtenidos.
+        """
+        self.pca.n_components = n_components
+        principal_components = self.pca.fit_transform(self.X)    
+        if replace:
+            columns = [f'PC{i+1}' for i in range(n_components)]
+            self.X = pd.DataFrame(principal_components, columns=columns, index=self.X.index)
+        return principal_components
