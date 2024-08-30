@@ -1,12 +1,12 @@
 import pandas as pd
 import pickle
 from sklearn.model_selection import train_test_split
-
-# Definir las columnas iniciales a eliminar, debe ser reemplazado con los nombres reales de las columnas
-initial_columns_to_drop = ['column1', 'column2']  # Replace with actual column names to drop
+import unidecode
+from io import StringIO
+import csv
 
 class DataExtractor:
-    def __init__(self, base_path="../../data/", columns_to_drop=initial_columns_to_drop):
+    def __init__(self, base_path="../../data/", columns_to_drop=None):
         """
         Inicializa la clase DataExtractor, que se encarga de cargar, procesar y dividir conjuntos de datos
         en conjuntos de entrenamiento, validación y prueba.
@@ -16,53 +16,91 @@ class DataExtractor:
         columns_to_drop (list): Lista de columnas a eliminar al cargar los datos.
         """
         self.base_path = base_path
-        self.columns_to_drop = columns_to_drop
+        self.columns_to_drop = columns_to_drop if columns_to_drop is not None else []
+        self.removed_features = []  # Almacena los nombres de las características eliminadas
+        self.removed_rows = []  # Almacena las filas problemáticas
 
-    def load_data(self, nameFolderRaw, file_name):
+    def load_data(self, nameFolderRaw, file_name, encoding='latin1', delimiter=';', expected_fields=3):
         """
-        Carga datos desde un archivo CSV, eliminando columnas innecesarias si están presentes.
+        Carga datos desde un archivo CSV, eliminando columnas innecesarias y aquellas problemáticas.
 
         Parámetros:
         nameFolderRaw (str): Nombre de la carpeta que contiene los datos en bruto.
         file_name (str): Nombre del archivo CSV a cargar.
+        encoding (str): Codificación del archivo. Por defecto es 'latin1'.
+        delimiter (str): Delimitador utilizado en el archivo CSV. Por defecto es ';'.
+        expected_fields (int): Número esperado de campos por línea.
 
         Returns:
         DataFrame: El DataFrame con los datos cargados y las columnas especificadas eliminadas.
         """
         folder_path = self.base_path + nameFolderRaw + file_name
-        data = pd.read_csv(folder_path)
-        data = data.drop(columns=self.columns_to_drop, errors='ignore')
+        valid_rows = []
+        
+        with open(folder_path, 'r', encoding=encoding) as file:
+            for i, line in enumerate(file, 1):
+                # Contar el número de campos en la línea
+                if len(line.split(delimiter)) == expected_fields:
+                    valid_rows.append(line)
+                else:
+                    self.removed_rows.append((i, line.strip()))
+
+        # Cargar los datos filtrados en un DataFrame usando StringIO
+        try:
+            data = pd.read_csv(StringIO('\n'.join(valid_rows)), 
+                               encoding=encoding, 
+                               delimiter=delimiter, 
+                               quoting=csv.QUOTE_NONE)
+        except pd.errors.ParserError as e:
+            print(f"Error al leer el archivo filtrado: {e}")
+            return None
+
+        # Eliminar columnas problemáticas (ejemplo: columnas con muchos valores nulos)
+        """ columns_to_remove = data.columns[data.isnull().mean() > 0.5].tolist()
+        self.removed_features.extend(columns_to_remove)
+        data = data.drop(columns=columns_to_remove) """
+
+
+        # Reemplazar 'ñ' con 'n' y eliminar tildes
+        data.columns = [unidecode.unidecode(col).replace('n', 'ñ') for col in data.columns]
+        data = data.applymap(lambda x: unidecode.unidecode(x).replace('n', 'ñ') if isinstance(x, str) else x)
+
         return data
 
-    def load_data_processed(self, namefile):
+    def get_removed_features(self):
         """
-        Carga un archivo de datos ya procesados desde un archivo pickle.
-
-        Parámetros:
-        namefile (str): Nombre del archivo pickle a cargar.
-
+        Devuelve una lista de las características que fueron eliminadas debido a problemas.
+        
         Returns:
-        object: El objeto de datos cargado desde el archivo pickle.
+        list: Lista de características eliminadas.
         """
-        with open(self.base_path + "processed/" + namefile, 'rb') as f:
-            data = pickle.load(f)
-        return data
+        return self.removed_features
     
+    def get_removed_rows(self):
+        """
+        Devuelve una lista de las filas que fueron eliminadas debido a problemas.
+        
+        Returns:
+        list: Lista de filas eliminadas con su número de línea y contenido.
+        """
+        return self.removed_rows
+
     @staticmethod
-    def save_data_pickle(self, data, namefile, filter_condition=None):
+    def save_data_pickle(data, namefile, base_path, filter_condition=None):
         """
         Guarda un conjunto de datos en un archivo pickle, con una opción para aplicar un filtro antes de guardar.
 
         Parámetros:
         data (DataFrame or object): El conjunto de datos o el objeto a guardar.
         namefile (str): Nombre del archivo pickle donde se guardará.
+        base_path (str): Ruta base donde se almacenará el archivo.
         filter_condition (str, optional): Condición de filtrado a aplicar antes de guardar los datos.
         """
         if filter_condition:
             data = data.query(filter_condition)
-        with open(self.base_path + "processed/" + namefile, 'wb') as f:
+        with open(base_path + "processed/" + namefile, 'wb') as f:
             pickle.dump(data, f)
-    
+
     @staticmethod
     def extract_test_validation_training_data(data, training_ratio=0.7, test_ratio=0.2, validation_ratio=0.1):
         """
@@ -101,3 +139,5 @@ class DataExtractor:
             (x_validation_data, y_validation_data),
             (x_test_data, y_test_data)
         ]
+
+
