@@ -14,9 +14,7 @@ pipeline  # Para crear pipelines de scikit-learn
 imblearn #libreria para balancear datos
 category_encoders # libreria para codificar variables categóricas
 seaborn # libreria para graficos
-unidecode
-ipkernel # Para usar Jupyter Notebooks
+unidecode # libreria para quitar acentos
 
 # pip install -r requirements.txt
-#pickle  # Para guardar modelos de scikit-learn 
 

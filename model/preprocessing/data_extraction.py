@@ -1,71 +1,96 @@
 import pandas as pd
 import pickle
 from sklearn.model_selection import train_test_split
-import unidecode
-from io import StringIO
+import re
 import csv
 
 class DataExtractor:
     def __init__(self, base_path="../../data/", columns_to_drop=None):
         """
-        Inicializa la clase DataExtractor, que se encarga de cargar, procesar y dividir conjuntos de datos
-        en conjuntos de entrenamiento, validación y prueba.
+        Initializes the data extractor with a base path and optional columns to drop.
 
-        Parámetros:
-        base_path (str): Ruta base donde se almacenan los datos.
-        columns_to_drop (list): Lista de columnas a eliminar al cargar los datos.
+        Parameters:
+        - base_path (str): Base path where the data files are stored.
+        - columns_to_drop (list of str, optional): List of column names to drop during data loading.
         """
         self.base_path = base_path
-        self.columns_to_drop = columns_to_drop if columns_to_drop is not None else []
-        self.removed_features = []  # Almacena los nombres de las características eliminadas
-        self.removed_rows = []  # Almacena las filas problemáticas
+        self.columns_to_drop = columns_to_drop or []
 
-    def load_data(self, nameFolderRaw, file_name, encoding='latin1', delimiter=';', expected_fields=3):
+    def preprocess_csv(self, input_path, output_path, encoding='latin1'):
         """
-        Carga datos desde un archivo CSV, eliminando columnas innecesarias y aquellas problemáticas.
+        Preprocesses a CSV file by reading and correcting lines that contain '//'.
 
-        Parámetros:
-        nameFolderRaw (str): Nombre de la carpeta que contiene los datos en bruto.
-        file_name (str): Nombre del archivo CSV a cargar.
-        encoding (str): Codificación del archivo. Por defecto es 'latin1'.
-        delimiter (str): Delimitador utilizado en el archivo CSV. Por defecto es ';'.
-        expected_fields (int): Número esperado de campos por línea.
+        Parameters:
+        - input_path (str): Relative path of the input file.
+        - output_path (str): Relative path of the processed output file.
+        - encoding (str): Character encoding of the file.
+        """
+        full_input_path = self.base_path + input_path
+        full_output_path = self.base_path + "processed" + output_path
+        with open(full_input_path, 'r', encoding=encoding) as infile, \
+             open(full_output_path, 'w', encoding=encoding) as outfile:
+            buffer = ''
+            for i, line in enumerate(infile):
+                line = self.remove_non_ascii(line)  # Remove non-ASCII characters.
+                if i == 0:
+                    # Write the first line removing any '//'
+                    outfile.write(line.replace('//', ''))
+                else:
+                    if '//' in line:
+                        # Process and write lines that contain '//'
+                        parts = line.split('//')
+                        buffer += ' ' + parts[0].strip()
+                        outfile.write(buffer + '\n')
+                        buffer = parts[1].strip() if len(parts) > 1 else ''
+                    else:
+                        # Continue accumulating text if there is no '//'
+                        buffer += ' ' + line.strip()
+            if buffer:
+                # Write any remaining text in the buffer
+                outfile.write(buffer + '\n')
+
+    def load_data(self, folder_name, file_name, encoding='latin1', delimiter=';'):
+        """
+        Loads data from a CSV file, attempting to convert columns to numeric and dropping unwanted columns.
+
+        Parameters:
+        - folder_name (str): Name of the subdirectory where the file is located.
+        - file_name (str): Name of the file to load.
+        - encoding (str): Character encoding of the file.
+        - delimiter (str): Field delimiter in the CSV file.
 
         Returns:
-        DataFrame: El DataFrame con los datos cargados y las columnas especificadas eliminadas.
+        - pd.DataFrame or None: DataFrame with the loaded data or None if an error occurs.
         """
-        folder_path = self.base_path + nameFolderRaw + file_name
-        valid_rows = []
-        
-        with open(folder_path, 'r', encoding=encoding) as file:
-            for i, line in enumerate(file, 1):
-                # Contar el número de campos en la línea
-                if len(line.split(delimiter)) == expected_fields:
-                    valid_rows.append(line)
-                else:
-                    self.removed_rows.append((i, line.strip()))
-
-        # Cargar los datos filtrados en un DataFrame usando StringIO
+        path = f"{self.base_path}{folder_name}{file_name}"
         try:
-            data = pd.read_csv(StringIO('\n'.join(valid_rows)), 
-                               encoding=encoding, 
-                               delimiter=delimiter, 
-                               quoting=csv.QUOTE_NONE)
+            data = pd.read_csv(path, encoding=encoding, delimiter=delimiter, header=0, quoting=csv.QUOTE_NONE, decimal=',')
+            for column in data.columns:
+                original_data = data[column].copy()
+                data[column] = pd.to_numeric(data[column], errors='coerce')
+                # Revert conversion if not all data could be converted to numeric
+                if data[column].isna().any():
+                    data[column] = original_data
         except pd.errors.ParserError as e:
-            print(f"Error al leer el archivo filtrado: {e}")
+            print(f"Error reading the file: {e}")
             return None
-
-        # Eliminar columnas problemáticas (ejemplo: columnas con muchos valores nulos)
-        """ columns_to_remove = data.columns[data.isnull().mean() > 0.5].tolist()
-        self.removed_features.extend(columns_to_remove)
-        data = data.drop(columns=columns_to_remove) """
-
-
-        # Reemplazar 'ñ' con 'n' y eliminar tildes
-        data.columns = [unidecode.unidecode(col).replace('n', 'ñ') for col in data.columns]
-        data = data.applymap(lambda x: unidecode.unidecode(x).replace('n', 'ñ') if isinstance(x, str) else x)
-
+        if self.columns_to_drop:
+            # Drop the specified columns, ignoring errors if they don't exist
+            data.drop(columns=self.columns_to_drop, inplace=True, errors='ignore')
         return data
+
+    @staticmethod
+    def remove_non_ascii(text):
+        """
+        Removes non-ASCII characters from a string.
+
+        Parameters:
+        - text (str): The text to process.
+
+        Returns:
+        - str: The processed text with non-ASCII characters removed.
+        """
+        return re.sub(r'[^\x00-\x7F]+', '', text)
 
     def get_removed_features(self):
         """

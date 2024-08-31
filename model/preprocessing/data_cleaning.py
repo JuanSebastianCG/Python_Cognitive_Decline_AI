@@ -8,7 +8,7 @@ from category_encoders import TargetEncoder, OneHotEncoder
 from sklearn.decomposition import PCA
 
 class DataCleaner:
-    def __init__(self, X, y):     
+    def __init__(self, X, y,delet_columns = []):   
         """
         Inicializa la clase DataCleaner, que se encarga de realizar diversas tareas de 
         limpieza y preprocesamiento de datos, incluyendo la imputación de valores faltantes, 
@@ -17,7 +17,10 @@ class DataCleaner:
         Parámetros:
         X (DataFrame): Las características de entrada.
         y (Series or array-like): La variable objetivo.
+        delet_columns (list): Lista de columnas a eliminar del DataFrame X.
         """
+        X.drop(delet_columns, axis=1, inplace=True)
+
         self.X = X
         self.y = y
         self.imputer = KNNImputer()
@@ -31,7 +34,7 @@ class DataCleaner:
             'target': TargetEncoder(),
             'onehot': OneHotEncoder()
         }
-        
+
         
     def delete_duplicate_rows(self):
         """
