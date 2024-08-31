@@ -3,6 +3,8 @@ import pickle
 from sklearn.model_selection import train_test_split
 import re
 import csv
+import numpy as np
+
 
 class DataExtractor:
     def __init__(self, base_path="../../data/", columns_to_drop=None):
@@ -15,6 +17,27 @@ class DataExtractor:
         """
         self.base_path = base_path
         self.columns_to_drop = columns_to_drop or []
+
+
+
+    def save_array_to_txt(self, array, filename):
+        """
+        Saves a NumPy array (matrix or vector) to a text file.
+
+        Parameters:
+        - array (np.ndarray): The matrix or vector to save.
+        - filename (str): The name of the file to save the array to.
+
+        Returns:
+        - None
+        """
+        path = self.base_path +"processed/" + filename
+        # Ensure the array is a NumPy array.
+        if not isinstance(array, np.ndarray):
+            array = np.array(array)
+        
+        # Save the array to a text file with proper formatting. sabe with one , delimiter
+        np.savetxt(path, array, delimiter=',', fmt='%s', newline='\n')
 
     def preprocess_csv(self, input_path, output_path, encoding='latin1'):
         """

@@ -10,23 +10,34 @@ class DataAnalyzer:
         pass
 
     @staticmethod
-    def visualize_data(X, kind='boxplot'):
+    def visualize_data(X, kind='boxplot', cols_per_plot=10):
         """
-        Visualiza los datos de un DataFrame usando un tipo de gráfico especificado.
-
+        Visualiza los datos de un DataFrame usando un tipo de gráfico especificado, dividiendo los datos en múltiples gráficos si hay demasiadas columnas.
+        
         Parámetros:
         - X (pd.DataFrame): El DataFrame con los datos a visualizar.
         - kind (str): El tipo de gráfico. Valores admitidos son 'boxplot' o 'histogram'.
+        - cols_per_plot (int): Número máximo de columnas a mostrar por gráfico.
         """
-        if kind == 'boxplot':
-            X.plot(kind='box', figsize=(12, 8))
-            plt.title("Boxplot de características")
-            plt.xticks(rotation=90)  # Rotación de las etiquetas del eje X para mejor visualización
-            
-        elif kind == 'histogram':
-            X.hist(figsize=(12, 8), bins=15, edgecolor='black')
-            plt.suptitle("Histogramas de características")
-        plt.show()
+        # Número de gráficos necesarios
+        num_plots = (len(X.columns) - 1) // cols_per_plot + 1
+        
+        for i in range(num_plots):
+            # Selecciona un subconjunto de columnas para el gráfico actual
+            start_col = i * cols_per_plot
+            end_col = min((i + 1) * cols_per_plot, len(X.columns))
+            subset = X.iloc[:, start_col:end_col]
+
+            if kind == 'boxplot':
+                ax = subset.plot(kind='box', figsize=(12, 8))
+                plt.title(f"Boxplot de características: Gráfico {i + 1}")
+                plt.xticks(rotation=90)  # Rotación de las etiquetas del eje X para mejor visualización
+                plt.show()
+
+            elif kind == 'histogram':
+                subset.hist(figsize=(12, 8), bins=15, edgecolor='black', layout=(4, (end_col - start_col + 3) // 4))
+                plt.suptitle(f"Histogramas de características: Gráfico {i + 1}")
+                plt.show()
 
     @staticmethod
     def visualize_correlation(data):
@@ -64,7 +75,7 @@ class DataAnalyzer:
         for col in data.columns:
             unique_counts += f"\n{col}:\n{data[col].value_counts().to_string()}\n"
 
-        #info += data.dtypes.to_string()
+        info += "\n\n"+data.dtypes.to_string()
         
         shape_info = "\nForma del DataFrame: " + str(data.shape)
         info += shape_info
