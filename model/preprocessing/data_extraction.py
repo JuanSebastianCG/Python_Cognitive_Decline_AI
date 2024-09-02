@@ -72,7 +72,7 @@ class DataExtractor:
                 # Write any remaining text in the buffer
                 outfile.write(buffer + '\n')
 
-    def load_data(self, folder_name, file_name, encoding='latin1', delimiter=';'):
+    def load_data_csv(self, folder_name, file_name, encoding='latin1', delimiter=';'):
         """
         Loads data from a CSV file, attempting to convert columns to numeric and dropping unwanted columns.
 
@@ -101,6 +101,25 @@ class DataExtractor:
             # Drop the specified columns, ignoring errors if they don't exist
             data.drop(columns=self.columns_to_drop, inplace=True, errors='ignore')
         return data
+
+
+
+    def load_data_txt(self, folder_name, file_name, delimiter='\n', encoding='utf-8'):
+        """
+        Loads data from a text file with a specified delimiter.
+
+        Parameters:
+        - file_path (str): Path to the text file to load.
+        - delimiter (str): Field delimiter in the text file.
+        - encoding (str): Character encoding of the file.
+
+        Returns:
+        - np.ndarray: Array with the loaded data.
+        """
+        path = f"{self.base_path}{folder_name}{file_name}"
+        return np.genfromtxt(path, delimiter=delimiter, dtype=str, encoding=encoding)
+    
+
 
     @staticmethod
     def remove_non_ascii(text):
@@ -133,8 +152,7 @@ class DataExtractor:
         """
         return self.removed_rows
 
-    @staticmethod
-    def save_data_pickle(data, namefile, filter_condition=None):
+    def save_data_pickle(self, data, namefile, filter_condition=None):
         """
         Guarda un conjunto de datos en un archivo pickle, con una opción para aplicar un filtro antes de guardar.
 
@@ -144,12 +162,12 @@ class DataExtractor:
         base_path (str): Ruta base donde se almacenará el archivo.
         filter_condition (str, optional): Condición de filtrado a aplicar antes de guardar los datos.
         """
-        path = self.base_path +"processed/" + namefile
+        path = f"{self.base_path}processed/{namefile}"
         if filter_condition:
             data = data.query(filter_condition)
         with open(path, 'wb') as f:
             pickle.dump(data, f)
-            
+
     def load_data_pickle(self, namefile):
         """
         Extrae un conjunto de datos de un archivo pickle.
