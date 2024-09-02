@@ -22,14 +22,13 @@ class FeatureSelector:
         self.rfe_selector = RFE(estimator=self.rf_classifier)
         self.sfs_selector = SequentialFeatureSelector(estimator=self.rf_classifier)
         
-    def select_features_chi2(self, k=10):
+    def select_features_chi2(self, k=10, threshold=None):
         """
         Selecciona las k mejores características según la prueba estadística chi-cuadrado.
-        Esta prueba mide la dependencia entre variables estocásticas, útil para seleccionar
-        características que están más fuertemente relacionadas con la variable objetivo.
 
         Parámetros:
-        k (int): Número de características a seleccionar. El valor por defecto es 10.
+        k (int): Número de características a seleccionar.
+        threshold (float): Umbral mínimo para la puntuación chi-cuadrado.
 
         Returns:
         dict: Un diccionario que contiene:
@@ -39,15 +38,16 @@ class FeatureSelector:
         self.chi2_selector.k = k
         X_selected = self.chi2_selector.fit_transform(self.X, self.y)
         scores = self.chi2_selector.scores_
-        selected_features = self.X.columns[self.chi2_selector.get_support()]
-        return {'features': selected_features, 'scores': scores}
-    
+        if threshold is not None:
+            selected_mask = scores >= threshold
+        else:
+            selected_mask = self.chi2_selector.get_support()
+        selected_features = self.X.columns[selected_mask]
+        return {'features': selected_features, 'scores': scores[selected_mask]}
     
     def select_features_spearman(self, threshold=0.5):
         """
         Selecciona las características basadas en su correlación de Spearman con la variable objetivo.
-        Spearman evalúa la relación monótona entre las características y la variable objetivo.
-        Esto lo hace haciendo uso de los rangos de las observaciones en lugar de los valores brutos.
 
         Parámetros:
         threshold (float): Umbral para la correlación. Solo se seleccionan características 
@@ -67,15 +67,13 @@ class FeatureSelector:
         selected_correlations = correlations[selected_mask]
         return {'selected_features': selected_features, 'correlations': selected_correlations}
 
-    def lasso_feature_selection(self, alpha=0.01):
+    def lasso_feature_selection(self, alpha=0.01, threshold=0.01):
         """
-        Selecciona características utilizando la regresión Lasso, que penaliza la suma de 
-        los valores absolutos de los coeficientes. Lasso puede llevar a coeficientes exactamente 
-        iguales a cero, lo que resulta en la selección automática de características.
+        Selecciona características utilizando la regresión Lasso.
 
         Parámetros:
-        alpha (float): El parámetro de penalización. Un alpha mayor resulta en más coeficientes 
-                       siendo reducidos a cero.
+        alpha (float): El parámetro de penalización.
+        threshold (float): Umbral mínimo para los coeficientes.
 
         Returns:
         dict: Un diccionario que contiene:
@@ -85,21 +83,43 @@ class FeatureSelector:
         self.lasso_selector.alpha = alpha
         self.lasso_selector.fit(self.X, self.y)
         coefficients = self.lasso_selector.coef_
-        selected_mask = np.abs(coefficients) > 0  
+        selected_mask = np.abs(coefficients) > threshold  
         selected_features = self.X.columns[selected_mask]  
         selected_coefficients = coefficients[selected_mask]  
         return {'selected_features': selected_features, 'coefficients': selected_coefficients}
 
+    def random_forest_feature_importance(self, n_features=10, threshold=None):
+        """
+        Selecciona características basadas en su importancia calculada por un clasificador 
+        de Random Forest.
+
+        Parámetros:
+        n_features (int): Número de características a seleccionar.
+        threshold (float): Umbral mínimo para la importancia de las características.
+
+        Returns:
+        dict: Un diccionario que contiene:
+            - 'selected_features': Los nombres de las características seleccionadas.
+            - 'importances': Las importancias de las características seleccionadas.
+        """
+        self.rf_classifier.fit(self.X, self.y)
+        importances = self.rf_classifier.feature_importances_
+        if threshold is not None:
+            selected_mask = importances >= threshold
+        else:
+            indices = np.argsort(importances)[-n_features:]
+            selected_mask = np.zeros_like(importances, dtype=bool)
+            selected_mask[indices] = True
+        selected_features = self.X.columns[selected_mask]
+        return {'selected_features': selected_features, 'importances': importances[selected_mask]}
+
     def sequential_feature_selection(self, n_features_to_select=10, direction='forward'):
         """
         Selecciona características secuencialmente utilizando un clasificador de Random Forest.
-        Esta técnica puede realizar una selección 'forward' o 'backward', donde en cada paso
-        se agregan o eliminan características para mejorar el rendimiento del modelo.
 
         Parámetros:
         n_features_to_select (int): Número de características a seleccionar.
-        direction (str): Dirección de la selección. Puede ser 'forward' para añadir características
-                         o 'backward' para eliminarlas.
+        direction (str): Dirección de la selección.
 
         Returns:
         dict: Un diccionario que contiene:
@@ -110,26 +130,6 @@ class FeatureSelector:
         self.sfs_selector.fit(self.X, self.y)
         selected_features = self.X.columns[self.sfs_selector.get_support()]
         return {'selected_features': selected_features}
-
-    def random_forest_feature_importance(self, n_features=10):
-        """
-        Selecciona características basadas en su importancia calculada por un clasificador 
-        de Random Forest. Las características se seleccionan según sus puntuaciones de 
-        importancia.
-
-        Parámetros:
-        n_features (int): Número de características a seleccionar.
-
-        Returns:
-        dict: Un diccionario que contiene:
-            - 'selected_features': Los nombres de las características seleccionadas.
-            - 'importances': Las importancias de las características seleccionadas.
-        """
-        self.rf_classifier.fit(self.X, self.y)
-        importances = self.rf_classifier.feature_importances_
-        indices = np.argsort(importances)[-n_features:]
-        selected_features = self.X.columns[indices]
-        return {'selected_features': selected_features, 'importances': importances[indices]}
 
     
 import matplotlib.pyplot as plt
@@ -147,7 +147,7 @@ class FeatureVisualizer:
         scores (array-like): Las puntuaciones correspondientes a las características.
         title (str): Título del gráfico.
         """
-        plt.figure(figsize=(10, 6))
+        plt.figure(figsize=(30, 10))
         plt.bar(features, scores, color='skyblue')
         plt.xlabel('Features')
         plt.ylabel('Scores')
@@ -165,7 +165,7 @@ class FeatureVisualizer:
         coefficients (array-like): Los coeficientes correspondientes a las características.
         title (str): Título del gráfico.
         """
-        plt.figure(figsize=(10, 6))
+        plt.figure(figsize=(30, 10))
         plt.bar(features, coefficients, color='green')
         plt.xlabel('Features')
         plt.ylabel('Coefficient Value')
@@ -184,7 +184,7 @@ class FeatureVisualizer:
         importances (array-like): Las importancias correspondientes a las características.
         title (str): Título del gráfico.
         """
-        plt.figure(figsize=(10, 6))
+        plt.figure(figsize=(30, 20))
         plt.barh(features, importances, color='red')
         plt.xlabel('Importance')
         plt.ylabel('Features')
@@ -201,7 +201,7 @@ class FeatureVisualizer:
         correlations (array-like): Los coeficientes de correlación correspondientes.
         title (str): Título del gráfico.
         """
-        plt.figure(figsize=(10, 6))
+        plt.figure(figsize=(30, 10))
         plt.bar(features, correlations, color='orange')
         plt.xlabel('Features')
         plt.ylabel('Correlation Coefficient')

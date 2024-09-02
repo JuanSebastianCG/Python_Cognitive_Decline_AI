@@ -134,7 +134,7 @@ class DataExtractor:
         return self.removed_rows
 
     @staticmethod
-    def save_data_pickle(data, namefile, base_path, filter_condition=None):
+    def save_data_pickle(data, namefile, filter_condition=None):
         """
         Guarda un conjunto de datos en un archivo pickle, con una opción para aplicar un filtro antes de guardar.
 
@@ -144,10 +144,24 @@ class DataExtractor:
         base_path (str): Ruta base donde se almacenará el archivo.
         filter_condition (str, optional): Condición de filtrado a aplicar antes de guardar los datos.
         """
+        path = self.base_path +"processed/" + namefile
         if filter_condition:
             data = data.query(filter_condition)
-        with open(base_path + "processed/" + namefile, 'wb') as f:
+        with open(path, 'wb') as f:
             pickle.dump(data, f)
+            
+    def load_data_pickle(self, namefile):
+        """
+        Extrae un conjunto de datos de un archivo pickle.
+
+        Parámetros:
+        namefile (str): Nombre del archivo pickle del que se extraerán los datos.
+
+        Returns:
+        DataFrame or object: El conjunto de datos o el objeto extraído del archivo pickle.
+        """
+        with open(self.base_path + "processed/" + namefile, 'rb') as f:
+            return pickle.load(f)
 
     @staticmethod
     def extract_test_validation_training_data(data, training_ratio=0.7, test_ratio=0.2, validation_ratio=0.1):
