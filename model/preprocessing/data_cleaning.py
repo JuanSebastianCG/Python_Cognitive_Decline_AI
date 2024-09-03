@@ -7,19 +7,20 @@ from sklearn.ensemble import IsolationForest
 from category_encoders import TargetEncoder, OneHotEncoder
 from sklearn.decomposition import PCA
 
-class DataCleaner:
-    def __init__(self, X, y,delet_columns = []):   
-        """
-        Inicializa la clase DataCleaner, que se encarga de realizar diversas tareas de 
-        limpieza y preprocesamiento de datos, incluyendo la imputación de valores faltantes, 
-        balanceo de clases, eliminación de outliers, y codificación de características.
 
-        Parámetros:
-        X (DataFrame): Las características de entrada.
-        y (Series or array-like): La variable objetivo.
-        delet_columns (list): Lista de columnas a eliminar del DataFrame X.
+class DataCleaner:
+    def __init__(self, X, y, delete_columns=[]):   
         """
-        X.drop(delet_columns, axis=1, inplace=True)
+        Initializes the DataCleaner class, which is responsible for performing various data cleaning
+        and preprocessing tasks including imputation of missing values, class balancing, outlier removal,
+        and feature encoding.
+
+        Parameters:
+        X (DataFrame): The input features.
+        y (Series or array-like): The target variable.
+        delete_columns (list): List of columns to be removed from the DataFrame X.
+        """
+        X.drop(delete_columns, axis=1, inplace=True)
 
         self.X = X
         self.y = y
@@ -35,48 +36,47 @@ class DataCleaner:
             'onehot': OneHotEncoder()
         }
 
-        
     def delete_duplicate_rows(self):
         """
-        Elimina filas duplicadas en el DataFrame X, asegurando que la variable objetivo y
-        las características queden sincronizadas.
+        Removes duplicate rows in DataFrame X, ensuring that the target variable and
+        the features remain synchronized.
 
         Returns:
-        tuple: El DataFrame de características X sin duplicados y la variable objetivo y correspondiente.
+        tuple: The feature DataFrame X without duplicates and the corresponding target variable y.
         """
         self.X.drop_duplicates(inplace=True)
         self.y = self.y[self.X.index]
         return self.X, self.y
-    
+
     def delete_null_data(self):
         """
-        Elimina filas con valores nulos en el DataFrame X, sincronizando también la variable objetivo y.
+        Deletes rows with null values in DataFrame X, also synchronizing the target variable y.
 
         Returns:
-        tuple: El DataFrame de características X sin valores nulos y la variable objetivo y correspondiente.
+        tuple: The feature DataFrame X without null values and the corresponding target variable y.
         """
         self.X.dropna(inplace=True)
         self.y = self.y[self.X.index]
         return self.X, self.y
-    
+
     def delete_Object_columns(self):
         """
-        Elimina columnas de tipo objeto del DataFrame X, dejando solo columnas numéricas o de otro tipo.
+        Removes object type columns from DataFrame X, leaving only numeric or other types of columns.
 
         Returns:
-        DataFrame: El DataFrame X sin columnas de tipo objeto.
+        DataFrame: The DataFrame X without object type columns.
         """
         self.X = self.X.select_dtypes(exclude=['object'])
         return self.X
-        
+
     def balance_data(self):
         """
-        Balancea el conjunto de datos usando la técnica de sobremuestreo SMOTE para manejar el desbalanceo de clases.
-        Smote basicamente toma los datos de la clase minoritaria y genera datos sintéticos para igualar la cantidad de datos de la clase mayoritaria.
-        los datos sinteticos se generan con la técnica de interpolación de K-vecinos más cercanos.
+        Balances the dataset using the SMOTE oversampling technique to handle class imbalance.
+        SMOTE essentially takes the minority class data and generates synthetic data to match the quantity
+        of the majority class data using the K-nearest neighbors interpolation technique.
 
         Returns:
-        tuple: El DataFrame de características balanceadas X y la variable objetivo balanceada y.
+        tuple: The balanced feature DataFrame X and the balanced target variable y.
         """
         X_balanced, y_balanced = self.smote.fit_resample(self.X, self.y)
         self.X = X_balanced
@@ -85,14 +85,14 @@ class DataCleaner:
 
     def standardize(self, ignore_columns=[]):
         """
-        Estandariza las características numéricas del DataFrame X, ignorando aquellas que se especifiquen.
-        formula de estandarización: (X - mean(X)) / std(X)
+        Standardizes the numeric features of DataFrame X, excluding specified columns.
+        Standardization formula: (X - mean(X)) / std(X)
 
-        Parámetros:
-        ignore_columns (list): Lista de columnas a excluir de la estandarización.
+        Parameters:
+        ignore_columns (list): List of columns to exclude from standardization.
 
         Returns:
-        DataFrame: El DataFrame X con las columnas numéricas estandarizadas.
+        DataFrame: The DataFrame X with standardized numeric columns.
         """
         columns_to_standardize = self.X.select_dtypes(include=[np.number]).columns.difference(ignore_columns)
         self.X.loc[:, columns_to_standardize] = self.scaler.fit_transform(self.X[columns_to_standardize])
@@ -100,25 +100,25 @@ class DataCleaner:
 
     def impute_missing_values(self):
         """
-        Imputa valores faltantes en el DataFrame X utilizando la técnica de K-Nearest Neighbors (KNN).
-        los valores faltantes se reemplazan por la media de los k vecinos más cercanos.
+        Imputes missing values in DataFrame X using the K-Nearest Neighbors (KNN) technique.
+        Missing values are replaced by the mean of the k-nearest neighbors.
 
         Returns:
-        DataFrame: El DataFrame X con los valores faltantes imputados.
+        DataFrame: The DataFrame X with imputed missing values.
         """
         self.X[:] = self.imputer.fit_transform(self.X)
         return self.X
 
     def delete_outliers(self, delete_indices=True):
         """
-        Detecta y opcionalmente elimina outliers en el DataFrame X utilizando Isolation Forest.
+        Detects and optionally removes outliers in DataFrame X using Isolation Forest.
 
-        Parámetros:
-        delete_indices (bool): Si es True, elimina las filas que son outliers. Si es False, 
-                               solo devuelve un DataFrame con la marca de outliers.
+        Parameters:
+        delete_indices (bool): If True, removes rows that are outliers. If False, only returns a DataFrame
+                               indicating which rows are outliers.
 
         Returns:
-        DataFrame: Un DataFrame con un indicador de si una fila es un outlier o no.
+        DataFrame: A DataFrame indicating whether a row is an outlier or not.
         """
         indices = self.detector.fit_predict(self.X)
         if delete_indices:
@@ -128,30 +128,28 @@ class DataCleaner:
 
     def normalize_features(self, ignore_columns=[]):
         """
-        Normaliza las características numéricas del DataFrame X utilizando Min-Max Scaling, 
-        ignorando aquellas que se especifiquen.
+        Normalizes the numeric features of DataFrame X using Min-Max Scaling, excluding specified columns.
 
-        Parámetros:
-        ignore_columns (list): Lista de columnas a excluir de la normalización.
+        Parameters:
+        ignore_columns (list): List of columns to exclude from normalization.
 
         Returns:
-        DataFrame: El DataFrame X con las columnas numéricas normalizadas.
+        DataFrame: The DataFrame X with normalized numeric columns.
         """
         columns_to_normalize = self.X.select_dtypes(include=[np.number]).columns.difference(ignore_columns)
         self.X.loc[:, columns_to_normalize] = self.min_max_scaler.fit_transform(self.X[columns_to_normalize])
         return self.X
-    
+
     def encode_features(self, target_column, method='target'):
         """
-        Codifica las características categóricas del DataFrame X utilizando la técnica 
-        especificada ('target' o 'onehot').
+        Encodes the categorical features of DataFrame X using the specified technique ('target' or 'onehot').
 
-        Parámetros:
-        target_column (str): El nombre de la columna objetivo para Target Encoding.
-        method (str): Método de codificación ('target' para Target Encoding, 'onehot' para One-Hot Encoding).
+        Parameters:
+        target_column (str): The name of the target column for Target Encoding.
+        method (str): Encoding method ('target' for Target Encoding, 'onehot' for One-Hot Encoding).
 
         Returns:
-        DataFrame: El DataFrame X con las características categóricas codificadas.
+        DataFrame: The DataFrame X with encoded categorical features.
         """
         encoder = self.encoders[method]
         self.X = encoder.fit_transform(self.X, self.y if method == 'target' else None)
@@ -159,13 +157,13 @@ class DataCleaner:
 
     def generate_polynomial_columns(self, replace_Db=False):
         """
-        Genera nuevas características polinómicas basadas en las existentes en el DataFrame X.
+        Generates new polynomial features based on the existing ones in DataFrame X.
 
-        Parámetros:
-        replace_Db (bool): Si es True, reemplaza las características originales por las nuevas características polinómicas.
+        Parameters:
+        replace_Db (bool): If True, replaces the original features with the newly generated polynomial features.
 
         Returns:
-        DataFrame: Un nuevo DataFrame con las características polinómicas generadas.
+        DataFrame: A new DataFrame with generated polynomial features.
         """
         new_features = self.poly.fit_transform(self.X)
         new_features = pd.DataFrame(new_features, columns=self.poly.get_feature_names_out(self.X.columns))
@@ -175,14 +173,14 @@ class DataCleaner:
 
     def reduce_dimensionality(self, n_components=2, replace=False):
         """
-        Reduce la dimensionalidad de las características en el DataFrame X utilizando PCA (Análisis de Componentes Principales).
+        Reduces the dimensionality of the features in DataFrame X using PCA (Principal Component Analysis).
 
-        Parámetros:
-        n_components (int): El número de componentes principales a retener.
-        replace (bool): Si es True, reemplaza las características originales por los componentes principales.
+        Parameters:
+        n_components (int): The number of principal components to retain.
+        replace (bool): If True, replaces the original features with the principal components.
 
         Returns:
-        array: Un array con los componentes principales obtenidos.
+        array: An array containing the obtained principal components.
         """
         self.pca.n_components = n_components
         principal_components = self.pca.fit_transform(self.X)    
