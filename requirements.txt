@@ -4,18 +4,17 @@ pandas # Para manipulación de datos
 numpy # Para manipulación de datos
 scikit-learn # Para modelos de machine learning
 matplotlib # Para gráficos
-sqlalchemy  # Si estás usando una base de datos
 pydantic  # Para validación de datos en FastAPI
 pydantic-settings
 tensorflow  # Si decides utilizar redes neuronales
 tensorboardX # Para visualizar los resultados de TensorFlow
 xgboost  # Para modelos de boosting
-pipeline  # Para crear pipelines de scikit-learn
 imblearn #libreria para balancear datos
 category_encoders # libreria para codificar variables categóricas
 seaborn # libreria para graficos
 unidecode # libreria para quitar acentos
 bayesian-optimization
+joblib
 
 # pip install -r requirements.txt
 
