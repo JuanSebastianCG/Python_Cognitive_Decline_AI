@@ -180,9 +180,38 @@ class DataExtractor:
         """
         with open(self.base_path + "processed/" + namefile, 'rb') as f:
             return pickle.load(f)
+        
+
+    def save_data_json(self, data, namefile):
+        """
+        Guarda un conjunto de datos en un archivo JSON.
+
+        Parámetros:
+        data (DataFrame): El conjunto de datos a guardar.
+        namefile (str): Nombre del archivo JSON donde se guardará.
+        
+        with open('best_hyperparameters.json', 'w') as f:
+            json.dump(best_params, f, indent=4)
+        """
+        path = f"{self.base_path}processed/{namefile}"
+        with open(path , 'w') as f:
+            data.to_json(f, orient='records', lines=True)
+
+    def load_data_json(self, namefile):
+        """
+        Extrae un conjunto de datos de un archivo JSON.
+
+        Parámetros:
+        namefile (str): Nombre del archivo JSON del que se extraerán los datos.
+
+        Returns:
+        DataFrame: El conjunto de datos extraído del archivo JSON.
+        """
+        path = f"{self.base_path}processed/{namefile}"
+        return pd.read_json(path, lines=True)
 
     @staticmethod
-    def extract_test_validation_training_data(data, training_ratio=0.7, test_ratio=0.2, validation_ratio=0.1):
+    def extract_test_validation_training_data(data, target , training_ratio=0.7, test_ratio=0.2, validation_ratio=0.1):
         """
         Divide un conjunto de datos en conjuntos de entrenamiento, validación y prueba según las proporciones especificadas.
 
@@ -193,10 +222,7 @@ class DataExtractor:
         validation_ratio (float): Proporción del conjunto de datos destinado a la validación.
 
         Returns:
-        list: Una lista de tuplas que contienen:
-            - Datos de entrenamiento (X e y)
-            - Datos de validación (X e y)
-            - Datos de prueba (X e y)
+        dict: Un diccionario que contiene las divisiones de los datos en conjuntos de entrenamiento, validación y prueba.
         """
         # Dividir datos en conjunto de entrenamiento y un conjunto temporal (test + validación)
         training_data, temp_data = train_test_split(data, test_size=1-training_ratio, random_state=42)
@@ -205,19 +231,19 @@ class DataExtractor:
         validation_data, test_data = train_test_split(temp_data, test_size=relative_validation_ratio, random_state=42)
         
         # Separar características (X) y la variable objetivo (y) para cada conjunto
-        x_training_data = training_data.drop(columns=['target'])
-        y_training_data = training_data['target']
+        x_training_data = training_data.drop(columns=[target])
+        y_training_data = training_data[target]
         
-        x_validation_data = validation_data.drop(columns=['target'])
-        y_validation_data = validation_data['target']
+        x_validation_data = validation_data.drop(columns=[target])
+        y_validation_data = validation_data[target]
         
-        x_test_data = test_data.drop(columns=['target'])
-        y_test_data = test_data['target']
+        x_test_data = test_data.drop(columns=[target])
+        y_test_data = test_data[target]
         
-        return [
-            (x_training_data, y_training_data),
-            (x_validation_data, y_validation_data),
-            (x_test_data, y_test_data)
-        ]
+        return {
+            'training': [x_training_data, y_training_data],
+            'validation': [x_validation_data, y_validation_data],
+            'test': [x_test_data, y_test_data]
+        }
 
 

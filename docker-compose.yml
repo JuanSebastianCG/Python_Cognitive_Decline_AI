@@ -15,7 +15,7 @@ services:
   tensorboard:
     image: tensorflow/tensorflow
     volumes:
-      - ./model/logs/fit:/logs  # Asegura que esta ruta coincide con la ubicación local de los logs
+      - ./model/logs:/logs  
     command: tensorboard --logdir=/logs --bind_all
     ports:
       - "6006:6006"
