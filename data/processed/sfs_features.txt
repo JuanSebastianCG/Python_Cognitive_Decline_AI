@@ -1,0 +1,110 @@
+Lugar Nacimiento
+Municipio Atencin
+Edad
+Gnero
+Lateralidad
+Autopercepcin Salud
+Estado Civil
+Vive con pareja
+ADT
+Nmero Personas Viven Casa
+Vive solo
+Estrato
+Escolaridad
+Ocupacin
+Salario
+Antecedentes Alcohol
+Antecedentes Tabaco
+Antecedentes Sustancias Psicoactivas
+Antecedentes Hta
+I-ECA
+Tipo SC
+STENT
+M-DISL
+ESTATINA
+FIBRATOS
+GLUC-I
+TEOFI
+Antecedentes ERC
+MERC-2
+CALCIO
+A. FOLIC
+Insulinoterapia
+Tipo DM
+MDM-1
+MDM-2
+Antecedentes Alteraciones Tiroideas
+MTIR
+M. Tiroides
+Tipo problema auditivo
+Hipoacusia
+Antecedentes visuales
+Tipo problema visuales
+Antecedentes Convulsiones
+Desc. Convulsiones
+Epilepsia
+Antecedentes Enfermedades Psiquiatricas
+Tipo enfermedad psiquitrica
+Psiqu. Def
+Insomnio
+A. Valpro
+CBZ
+GABA
+iSRS
+iSRS/N
+AD-Atip
+Antip-A
+AINES
+Antecedentes Familiar DC
+Familiar con DC
+Tipo DC AF
+Antecedentes Familiares Otros
+Lawton Pre Salir Casa
+Lawton Pre Caminar Habitacion
+Lawton Pre Usar Telefono
+Lawton Pre Ir Compras
+Lawton Pre Tomar Medicamento
+Lawton Pre Abrir Cerrar Ventanas
+Lawton Pre Manejar Dinero
+Lawton Pre Manipular Interruptores
+Lawton Pre Hacer Propia Comida
+Lawton Pre Manipular Llaves
+Lawton Pre Trabajo Pesado Casa
+Lawton Act Salir Casa
+Lawton Act Caminar Habitacion
+Lawton Act Abrir Cerrar Ventanas
+Lawton Act Manejar Dinero
+Lawton Act Manipular Interruptores
+Lawton Act Manipular Llaves
+Lawton Act Cortarse Uas
+Lawton Act Trabajo Pesado Casa
+Total Lawton Previo No
+Total Lawton Actual Con Dificultad
+Total Lawton Actual No
+Diferencia Lawton
+Minimental Ori Ao
+Minimental Ori Dia
+Minimental Ori Piso
+Minimental Reg Repeticion Palabras
+Minimental Len Identificacion Objetos
+Minimental Len Repeticion Frase
+Minimental Len Escritura
+Minimental Copiado Patron
+Moca Vis Union Grafo
+Moca Vis Copiar Cubo
+Moca Vis Reloj Contorno
+Moca Memoria Intento 1
+Moca Ate Serie Letras
+Moca Ate Restas
+Moca Recuerdo Diferido
+Moca Ori Mes
+Moca Ori Lugar
+Moca Ori Ciudad
+Moca Menos 12 Anios Estudio
+Total Gds
+Cdr Memoria
+Cdr Juicio
+Cdr Vida Social
+Cdr Hogar Y Aficiones
+Total Cdr
+Mdico Atencin

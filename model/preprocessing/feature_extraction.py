@@ -1,3 +1,4 @@
+
 from sklearn.feature_selection import chi2, SelectKBest, RFE, SequentialFeatureSelector
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import Lasso
@@ -7,12 +8,12 @@ import numpy as np
 class FeatureSelector:
     def __init__(self, X, y):
         """
-        Inicializa la clase FeatureSelector, que se encarga de manejar diversas técnicas 
-        de selección de características y modelos de clasificación.
+        Initializes the FeatureSelector class, which handles various feature selection techniques 
+        and classification models.
 
-        Parámetros:
-        X (array-like or DataFrame): Las características de entrada para el modelo.
-        y (array-like or Series): La variable objetivo para el modelo.
+        Parameters:
+        X (array-like or DataFrame): The input features for the model.
+        y (array-like or Series): The target variable for the model.
         """
         self.X = X
         self.y = y
@@ -24,16 +25,16 @@ class FeatureSelector:
         
     def select_features_chi2(self, k=10, threshold=None):
         """
-        Selecciona las k mejores características según la prueba estadística chi-cuadrado.
+        Selects the top k features based on the chi-squared statistical test.
 
-        Parámetros:
-        k (int): Número de características a seleccionar.
-        threshold (float): Umbral mínimo para la puntuación chi-cuadrado.
+        Parameters:
+        k (int): Number of features to select.
+        threshold (float): Minimum score threshold for the chi-squared test.
 
         Returns:
-        dict: Un diccionario que contiene:
-            - 'features': Los nombres de las características seleccionadas.
-            - 'scores': Las puntuaciones chi-cuadrado de las características.
+        dict: A dictionary containing:
+            - 'features': Names of the selected features.
+            - 'scores': Chi-squared scores of the features.
         """
         self.chi2_selector.k = k
         X_selected = self.chi2_selector.fit_transform(self.X, self.y)
@@ -47,16 +48,16 @@ class FeatureSelector:
     
     def select_features_spearman(self, threshold=0.5):
         """
-        Selecciona las características basadas en su correlación de Spearman con la variable objetivo.
+        Selects features based on their Spearman correlation with the target variable.
 
-        Parámetros:
-        threshold (float): Umbral para la correlación. Solo se seleccionan características 
-                           con una correlación absoluta superior a este valor.
+        Parameters:
+        threshold (float): Threshold for the correlation. Only features with an absolute correlation
+                           above this value are selected.
 
         Returns:
-        dict: Un diccionario que contiene:
-            - 'selected_features': Los nombres de las características seleccionadas.
-            - 'correlations': Los coeficientes de correlación de las características seleccionadas.
+        dict: A dictionary containing:
+            - 'selected_features': Names of the selected features.
+            - 'correlations': Correlation coefficients of the selected features.
         """
         correlations = np.array([spearmanr(self.X[col], self.y, nan_policy='omit')[0] for col in self.X.columns])
         valid_correlations = ~np.isnan(correlations)
@@ -69,16 +70,16 @@ class FeatureSelector:
 
     def lasso_feature_selection(self, alpha=0.01, threshold=0.01):
         """
-        Selecciona características utilizando la regresión Lasso.
+        Selects features using Lasso regression.
 
-        Parámetros:
-        alpha (float): El parámetro de penalización.
-        threshold (float): Umbral mínimo para los coeficientes.
+        Parameters:
+        alpha (float): The penalty parameter.
+        threshold (float): Minimum threshold for the coefficients.
 
         Returns:
-        dict: Un diccionario que contiene:
-            - 'selected_features': Los nombres de las características seleccionadas.
-            - 'coefficients': Los coeficientes de las características seleccionadas.
+        dict: A dictionary containing:
+            - 'selected_features': Names of the selected features.
+            - 'coefficients': Coefficients of the selected features.
         """
         self.lasso_selector.alpha = alpha
         self.lasso_selector.fit(self.X, self.y)
@@ -90,17 +91,16 @@ class FeatureSelector:
 
     def random_forest_feature_importance(self, n_features=10, threshold=None):
         """
-        Selecciona características basadas en su importancia calculada por un clasificador 
-        de Random Forest.
+        Selects features based on their importance as calculated by a Random Forest classifier.
 
-        Parámetros:
-        n_features (int): Número de características a seleccionar.
-        threshold (float): Umbral mínimo para la importancia de las características.
+        Parameters:
+        n_features (int): Number of features to select.
+        threshold (float): Minimum threshold for the feature importance.
 
         Returns:
-        dict: Un diccionario que contiene:
-            - 'selected_features': Los nombres de las características seleccionadas.
-            - 'importances': Las importancias de las características seleccionadas.
+        dict: A dictionary containing:
+            - 'selected_features': Names of the selected features.
+            - 'importances': Importance scores of the selected features.
         """
         self.rf_classifier.fit(self.X, self.y)
         importances = self.rf_classifier.feature_importances_
@@ -115,97 +115,18 @@ class FeatureSelector:
 
     def sequential_feature_selection(self, n_features_to_select=10, direction='forward'):
         """
-        Selecciona características secuencialmente utilizando un clasificador de Random Forest.
+        Selects features sequentially using a Random Forest classifier.
 
-        Parámetros:
-        n_features_to_select (int): Número de características a seleccionar.
-        direction (str): Dirección de la selección.
+        Parameters:
+        n_features_to_select (int): Number of features to select.
+        direction (str): Direction of the selection ('forward' or 'backward').
 
         Returns:
-        dict: Un diccionario que contiene:
-            - 'selected_features': Los nombres de las características seleccionadas.
+        dict: A dictionary containing:
+            - 'selected_features': Names of the selected features.
         """
         self.sfs_selector.n_features_to_select = n_features_to_select
         self.sfs_selector.direction = direction
         self.sfs_selector.fit(self.X, self.y)
         selected_features = self.X.columns[self.sfs_selector.get_support()]
         return {'selected_features': selected_features}
-
-    
-import matplotlib.pyplot as plt
-import numpy as np
-
-class FeatureVisualizer:
-    
-    @staticmethod
-    def plot_scores(features, scores, title='Feature Scores'):
-        """
-        Dibuja un gráfico de barras de las puntuaciones de las características.
-
-        Parámetros:
-        features (array-like): Los nombres de las características.
-        scores (array-like): Las puntuaciones correspondientes a las características.
-        title (str): Título del gráfico.
-        """
-        plt.figure(figsize=(30, 10))
-        plt.bar(features, scores, color='skyblue')
-        plt.xlabel('Features')
-        plt.ylabel('Scores')
-        plt.title(title)
-        plt.xticks(rotation=90)
-        plt.show()
-
-    @staticmethod
-    def plot_coefficients(features, coefficients, title='Lasso Coefficients'):
-        """
-        Dibuja un gráfico de barras de los coeficientes de Lasso.
-
-        Parámetros:
-        features (array-like): Los nombres de las características.
-        coefficients (array-like): Los coeficientes correspondientes a las características.
-        title (str): Título del gráfico.
-        """
-        plt.figure(figsize=(30, 10))
-        plt.bar(features, coefficients, color='green')
-        plt.xlabel('Features')
-        plt.ylabel('Coefficient Value')
-        plt.title(title)
-        plt.xticks(rotation=90)
-        plt.show()
-
-    @staticmethod
-    def plot_importances(features, importances, title='Random Forest Feature Importances'):
-        """
-        Dibuja un gráfico de barras horizontales de la importancia de las características
-        calculadas por Random Forest.
-
-        Parámetros:
-        features (array-like): Los nombres de las características.
-        importances (array-like): Las importancias correspondientes a las características.
-        title (str): Título del gráfico.
-        """
-        plt.figure(figsize=(30, 20))
-        plt.barh(features, importances, color='red')
-        plt.xlabel('Importance')
-        plt.ylabel('Features')
-        plt.title(title)
-        plt.show()
-
-    @staticmethod
-    def plot_correlations(features, correlations, title='Spearman Correlations'):
-        """
-        Dibuja un gráfico de barras de las correlaciones de Spearman.
-
-        Parámetros:
-        features (array-like): Los nombres de las características.
-        correlations (array-like): Los coeficientes de correlación correspondientes.
-        title (str): Título del gráfico.
-        """
-        plt.figure(figsize=(30, 10))
-        plt.bar(features, correlations, color='orange')
-        plt.xlabel('Features')
-        plt.ylabel('Correlation Coefficient')
-        plt.title(title)
-        plt.xticks(rotation=90)
-        plt.axhline(0, color='grey', linewidth=0.8)  # Línea de referencia en cero
-        plt.show()
