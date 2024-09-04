@@ -122,21 +122,3 @@ class ModelMetrics:
         else:
             print("The model does not support feature importance.")
 
-
-"""     def plot_learning_curve(self):
-        train_sizes, train_scores, test_scores = learning_curve(self.model, self.X_test, self.y_test, cv=5, n_jobs=-1, train_sizes=np.linspace(.1, 1.0, 10))
-        train_scores_mean = np.mean(train_scores, axis=1)
-        train_scores_std = np.std(train_scores, axis=1)
-        test_scores_mean = np.mean(test_scores, axis=1)
-        test_scores_std = np.std(test_scores, axis=1)
-
-        plt.figure(figsize=(10, 8))
-        plt.fill_between(train_sizes, train_scores_mean - train_scores_std, train_scores_mean + train_scores_std, alpha=0.1, color='r')
-        plt.fill_between(train_sizes, test_scores_mean - test_scores_std, test_scores_mean + test_scores_std, alpha=0.1, color='g')
-        plt.plot(train_sizes, train_scores_mean, 'o-', color='r', label='Training score')
-        plt.plot(train_sizes, test_scores_mean, 'o-', color='g', label='Cross-validation score')
-        plt.xlabel('Training Examples')
-        plt.ylabel('Score')
-        plt.title('Learning Curve')
-        plt.legend(loc="best")
-        plt.show() """
