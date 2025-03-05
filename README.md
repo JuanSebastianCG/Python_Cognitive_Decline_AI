@@ -1,4 +1,4 @@
-```markdown
+
 # Cognitive Decline Prediction Model
 
 ## Tabla de Contenidos
@@ -110,5 +110,3 @@ Una vez el servidor esté funcionando, puedes interactuar con el modelo a travé
 ## Agradecimientos
 - A todos los colaboradores y mentores que han participado en este proyecto.
 - A la Universidad Autónoma de Manizales por el soporte y los recursos proporcionados.
-
-```
