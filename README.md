@@ -1,112 +1,107 @@
 
+
 # Cognitive Decline Prediction Model
 
-## Tabla de Contenidos
-- [Resumen del Proyecto](#resumen-del-proyecto)
-- [Descripción Completa](#descripción-completa)
-  - [Contexto](#contexto)
-  - [Desafío Técnico](#desafío-técnico)
-  - [Plan de Acción](#plan-de-acción)
-- [Instalación](#instalación)
-  - [Pre-requisitos](#pre-requisitos)
-  - [Configuración del Entorno](#configuración-del-entorno)
-- [Uso](#uso)
-- [Contribución](#contribución)
-  - [Cómo Contribuir](#cómo-contribuir)
-  - [Código de Conducta](#código-de-conducta)
-- [Licencia](#licencia)
-- [Autores](#autores)
-- [Agradecimientos](#agradecimientos)
+## Table of Contents
+- [Project Summary](#project-summary)
+- [Full Description](#full-description)
+  - [Context](#context)
+  - [Technical Challenge](#technical-challenge)
+  - [Action Plan](#action-plan)
+- [Installation](#installation)
+  - [Prerequisites](#prerequisites)
+  - [Environment Setup](#environment-setup)
+- [Usage](#usage)
+- [Contribution](#contribution)
+  - [How to Contribute](#how-to-contribute)
+  - [Code of Conduct](#code-of-conduct)
+- [License](#license)
+- [Authors](#authors)
+- [Acknowledgments](#acknowledgments)
 
-## Resumen del Proyecto
-Este proyecto desarrolla un modelo predictivo para la detección temprana del deterioro cognitivo en adultos mayores, implementado a través de microservicios para facilitar su uso y escalabilidad.
+## Project Summary
+This project develops a predictive model for the early detection of cognitive decline in older adults, implemented through microservices to enhance usability and scalability.
 
-## Descripción Completa
+## Full Description
 
-### Contexto
-Enfrentamos un aumento global en la población de adultos mayores, donde el deterioro cognitivo se está convirtiendo en una preocupación mayor. Este proyecto utiliza tecnologías de vanguardia para abordar este desafío significativo.
+### Context
+We are facing a global increase in the population of older adults, where cognitive decline is becoming a growing concern. This project leverages cutting-edge technologies to address this significant challenge.
 
-### Desafío Técnico
-Diseñar un modelo que sea preciso y eficiente, capaz de procesar grandes volúmenes de datos clínicos para ofrecer diagnósticos tempranos y personalizados.
+### Technical Challenge
+Design a model that is accurate and efficient, capable of processing large volumes of clinical data to provide early and personalized diagnoses.
 
-### Plan de Acción
-1. **Preparación de Datos**: Limpieza, estandarización, y análisis preliminar.
-2. **Desarrollo del Modelo**: Selección de características y modelado predictivo.
-3. **Validación**: Técnicas de validación cruzada para asegurar la fiabilidad del modelo.
-4. **Optimización**: Mejoras en el modelo mediante técnicas de optimización avanzadas.
-5. **Monitoreo y Actualización**: Implementación de sistemas para el monitoreo continuo del rendimiento del modelo.
-6. **Despliegue**: Microservicios utilizando FastAPI y Docker.
+### Action Plan
+1. **Data Preparation**: Cleaning, standardization, and preliminary analysis.
+2. **Model Development**: Feature selection and predictive modeling.
+3. **Validation**: Cross-validation techniques to ensure model reliability.
+4. **Optimization**: Model improvements using advanced optimization techniques.
+5. **Monitoring and Updating**: Implementation of systems for continuous performance monitoring.
+6. **Deployment**: Microservices using FastAPI and Docker.
 
-## Instalación
+## Installation
 
-### Pre-requisitos
+### Prerequisites
 - Python 3.8+
 - pip
 - virtualenv
-- docker
+- Docker
 
 ```bash
-# Clona el repositorio
+# Clone the repository
 git clone https://github.com/juancgiraldo/cognitive-decline-prediction.git
 cd cognitive-decline-prediction
 
-# Configura el entorno virtual
+# Set up the virtual environment
 python -m venv venv
 source venv/bin/activate
 
-# Instala las dependencias
+# Install dependencies
 pip install -r requirements.txt
 ```
 
-## Configuración del Entorno
+## Environment Setup
 
-### Configuración de IDE
-Se recomienda utilizar Visual Studio Code con las siguientes extensiones para un entorno de desarrollo eficiente:
+### IDE Configuration
+It is recommended to use Visual Studio Code with the following extensions for an efficient development environment:
 - Python
 - Docker
 - GitLens
 
-### Creación del Entorno Python
-Utilizaremos `virtualenv` para crear un entorno aislado que permita manejar las dependencias de forma segura y eficaz.
+### Python Environment Creation
+We will use `virtualenv` to create an isolated environment that allows for safe and effective dependency management.
 
 ```bash
-    
-
 ```
 
-## Uso
+## Usage
 
-### Ejecución del Modelo
-Para iniciar el servidor y exponer el modelo como un microservicio, ejecute:
+### Running the Model
+To start the server and expose the model as a microservice, run:
 
-1. **configurar variables de entorno**: 
+1. **Set up environment variables**:
 
 ```bash
 # .env 
-# Variables de entorno
+# Environment variables
 DEBUG=True
 HOST=
 PORT= 
-
 ```
 
-2. **Execute docker**: 
+2. **Execute Docker**: 
 ```bash
 docker-compose up
 ```
 
-```bash
+### API Usage
+Once the server is running, you can interact with the model through the API generated by FastAPI, accessing the interactive documentation at `http://localhost:8000/docs`.
 
-### Uso del API
-Una vez el servidor esté funcionando, puedes interactuar con el modelo a través de la API generada por FastAPI, accediendo a la documentación interactiva en `http://localhost:8000/docs`.
+## License
 
+## Authors
+- **Juan Sebastian Cardenas Giraldo** - *Initial Work* - [juancgiraldo](https://github.com/juancgiraldo)
 
+## Acknowledgments
+- To all the collaborators and mentors who have participated in this project.
+- To the Universidad Autónoma de Manizales for their support and provided resources.
 
-## Licencia
-
-## Autores
-- **Juan Sebastian Cardenas Giraldo** - *Trabajo inicial* - [juancgiraldo](https://github.com/juancgiraldo)
-
-## Agradecimientos
-- A todos los colaboradores y mentores que han participado en este proyecto.
-- A la Universidad Autónoma de Manizales por el soporte y los recursos proporcionados.
